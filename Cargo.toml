@@ -1,0 +1,11 @@
+[package]
+name = "buoy_render"
+version = "0.1.0"
+authors = ["= <wcassella@gmail.com>"]
+
+[dependencies.sdl2]
+version = "0.31.0"
+features = ["bundled", "static-link"]
+
+[dependencies.buoy]
+path = "../buoy"
