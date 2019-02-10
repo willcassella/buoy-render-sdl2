@@ -7,7 +7,7 @@ use buoy::element::IntoObj;
 use buoy::render::CommandList;
 
 mod ui;
-use ui::{TestStub, Fader};
+use ui::{TestStub, Fader, Grower};
 
 extern crate sdl2;
 use sdl2::pixels::Color;
@@ -82,6 +82,9 @@ fn build_ui(window_width: f32, window_height: f32, ctx: &mut Window, first_frame
     if *first_frame {
         let fader = Fader::new(element::Id::str("BlueBox_2").append_str("border"));
         ctx.attach_frame_filter_post(Rc::new(fader));
+
+        let grower = Grower::new(element::Id::str("BlueBox_2").append_str("inner"));
+        ctx.attach_frame_filter_post(Rc::new(grower));
         *first_frame = false;
     }
 
