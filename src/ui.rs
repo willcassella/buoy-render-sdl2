@@ -1,27 +1,27 @@
+use std::rc::Rc;
 use buoy::Context;
-use buoy::element::{IntoUIElement, IntoObj, Stub, StubImpl, Id};
-use buoy::elements::{fill::SolidFill, min_max::{MinMax, VAlign}, border::BlockBorder, list::List};
 use buoy::render::color;
+use buoy::element::{IntoUIElement, IntoObj, Stub, StubImpl, Widget, Id, Filter, UIElement};
+use buoy::elements::{fill::SolidFill, min_max::{MinMax, VAlign}, border::BlockBorder, list::List};
 
 #[derive(Clone, Copy)]
 pub struct BlueBox;
 impl StubImpl for BlueBox {
     fn generate(self, ctx: &mut Context) {
+        let id = ctx.element_id();
+
         BlockBorder::uniform(10_f32)
         .color(color::constants::BLUE)
-        .into_obj(Id::str("BlueBox_border"))
+        .into_obj(id.append_str("border"))
         .push(ctx);
 
             SolidFill::new(color::constants::WHITE)
-            .into_obj(Id::str("BlueBox_fill"))
+            .into_obj(id.append_str("fill"))
             .push(ctx);
 
-                MinMax::default()
-                .width(100_f32)
-                .height(10_f32)
-                .into_obj(Id::str("BlueBox_inner"))
-                .push(ctx)
-                .pop();
+                MinMax::default().width(20_f32).height(10_f32)
+                .into_obj(id.append_str("inner"))
+                .push(ctx).pop();
 
             ctx.pop(); // BlueBox_fill
         ctx.pop(); // BlueBox)border
@@ -74,4 +74,39 @@ impl StubImpl for TestStub {
 
 impl IntoUIElement for TestStub {
     type Target = Stub<TestStub>;
+}
+
+#[derive(Clone, Copy)]
+pub struct Fader {
+    target: Id,
+    value: f32,
+    delta: f32,
+}
+
+impl Fader {
+    pub fn new(target: Id) -> Self {
+        Fader {
+            target,
+            value: 1_f32,
+            delta: -0.01_f32,
+        }
+    }
+}
+
+impl Filter for Fader {
+    fn filter(&self, ctx: &mut Context, mut elem: UIElement) {
+        if elem.id == self.target {
+            let mut elem = elem.downcast::<Widget<BlockBorder>>().ok().unwrap();
+            elem.imp.color = color::constants::GREEN;
+
+            ctx.push(elem.upcast());
+                ctx.children();
+            ctx.pop();
+        } else {
+            elem.attach_filter_post(Rc::new(*self));
+            ctx.push(elem);
+                ctx.children();
+            ctx.pop();
+        }
+    }
 }

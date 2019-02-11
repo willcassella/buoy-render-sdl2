@@ -1,11 +1,13 @@
-extern crate buoy;
+use std::time::Instant;
+use std::rc::Rc;
+
 use buoy::{Window, element};
 use buoy::layout::{Point, Area, Region};
 use buoy::element::IntoObj;
 use buoy::render::CommandList;
 
 mod ui;
-use ui::TestStub;
+use ui::{TestStub, Fader};
 
 extern crate sdl2;
 use sdl2::pixels::Color;
@@ -41,7 +43,10 @@ pub fn main() {
 
         // Build the UI
         let window_size = canvas.output_size().unwrap();
+
+        let start = Instant::now();
         let ui_commands = build_ui(window_size.0 as f32, window_size.1 as f32);
+        println!("Built UI in {} ms", start.elapsed().subsec_micros());
 
         // Render the UI
         canvas.set_draw_color(Color::RGB(0, 0, 0));
@@ -68,9 +73,16 @@ fn build_ui(window_width: f32, window_height: f32) -> CommandList {
         },
     };
 
-    // Build UI
     let mut ctx = Window::default();
-    let elem_obj = ctx.run(window_region.area, TestStub.into_obj(element::Id::str("root")).upcast()).expect("Failed to build UI");
+
+    // Create a root element
+    let root = TestStub.into_obj(element::Id::str("root"));
+
+    // Create a fader for one of the elements
+    let fader = Fader::new(element::Id::str("BlueBox_2").append_str("border"));
+    ctx.attach_frame_filter_post(Rc::new(fader));
+
+    let elem_obj = ctx.run(window_region.area, root.upcast()).expect("Failed to build UI");
 
     // Render UI
     let mut commands = CommandList::default();
