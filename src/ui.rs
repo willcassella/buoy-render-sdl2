@@ -93,15 +93,42 @@ impl Fader {
     }
 }
 
+impl Fader {
+    fn fade_color(&self, col: color::RGBA8) -> color::RGBA8 {
+        let red = (col.red() as f32 * self.value) as u8;
+        let green = (col.green() as f32 * self.value) as u8;
+        let blue = (col.blue() as f32 * self.value) as u8;
+        color::RGBA8::new(red, green, blue, 0xFF)
+    }
+
+    fn next(mut self) -> Self {
+        self.value += self.delta;
+        if self.value > 1_f32 {
+            self.value = 1_f32;
+            self.delta = -0.01_f32;
+        } else if self.value < 0_f32 {
+            self.value = 0_f32;
+            self.delta = 0.01_f32;
+        }
+
+        self
+    }
+}
+
 impl Filter for Fader {
     fn filter(&self, ctx: &mut Context, mut elem: UIElement) {
         if elem.id == self.target {
+            // Modify the color
             let mut elem = elem.downcast::<Widget<BlockBorder>>().ok().unwrap();
-            elem.imp.color = color::constants::GREEN;
+            elem.imp.color = self.fade_color(elem.imp.color);
 
+            // Put it back into the context
             ctx.push(elem.upcast());
                 ctx.children();
             ctx.pop();
+
+            // Create a new filter, with a different value
+            ctx.next_frame(Rc::new(self.next()));
         } else {
             elem.attach_filter_post(Rc::new(*self));
             ctx.push(elem);

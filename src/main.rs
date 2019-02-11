@@ -20,6 +20,7 @@ pub fn main() {
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
 
+    let mut first_frame = true;
     let window = video_subsystem.window("rust-sdl2 demo", 1920, 1080)
         .position_centered()
         .resizable()
@@ -28,6 +29,7 @@ pub fn main() {
 
     let mut canvas = window.into_canvas().present_vsync().build().unwrap();
     let mut event_pump = sdl_context.event_pump().unwrap();
+    let mut ctx = Window::default();
 
     'running: loop {
         // Handle events
@@ -45,7 +47,7 @@ pub fn main() {
         let window_size = canvas.output_size().unwrap();
 
         let start = Instant::now();
-        let ui_commands = build_ui(window_size.0 as f32, window_size.1 as f32);
+        let ui_commands = build_ui(window_size.0 as f32, window_size.1 as f32, &mut ctx, &mut first_frame);
         println!("Built UI in {} ms", start.elapsed().subsec_micros());
 
         // Render the UI
@@ -64,7 +66,7 @@ fn render_ui(canvas: &mut WindowCanvas, commands: &CommandList) {
     }
 }
 
-fn build_ui(window_width: f32, window_height: f32) -> CommandList {
+fn build_ui(window_width: f32, window_height: f32, ctx: &mut Window, first_frame: &mut bool) -> CommandList {
     let window_region = Region {
         pos: Point::zero(),
         area: Area {
@@ -73,14 +75,15 @@ fn build_ui(window_width: f32, window_height: f32) -> CommandList {
         },
     };
 
-    let mut ctx = Window::default();
-
     // Create a root element
     let root = TestStub.into_obj(element::Id::str("root"));
 
     // Create a fader for one of the elements
-    let fader = Fader::new(element::Id::str("BlueBox_2").append_str("border"));
-    ctx.attach_frame_filter_post(Rc::new(fader));
+    if *first_frame {
+        let fader = Fader::new(element::Id::str("BlueBox_2").append_str("border"));
+        ctx.attach_frame_filter_post(Rc::new(fader));
+        *first_frame = false;
+    }
 
     let elem_obj = ctx.run(window_region.area, root.upcast()).expect("Failed to build UI");
 
