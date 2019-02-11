@@ -1,10 +1,11 @@
 extern crate buoy;
-use buoy::{Window, WidgetId, IntoObj};
+use buoy::{Window, element};
 use buoy::layout::{Point, Area, Region};
-use buoy::commands::CommandList;
+use buoy::element::IntoObj;
+use buoy::render::CommandList;
 
 mod ui;
-use ui::{TestGenerator};
+use ui::TestStub;
 
 extern crate sdl2;
 use sdl2::pixels::Color;
@@ -43,6 +44,7 @@ pub fn main() {
         let ui_commands = build_ui(window_size.0 as f32, window_size.1 as f32);
 
         // Render the UI
+        canvas.set_draw_color(Color::RGB(0, 0, 0));
         canvas.clear();
         render_ui(&mut canvas, &ui_commands);
         canvas.present();
@@ -68,10 +70,10 @@ fn build_ui(window_width: f32, window_height: f32) -> CommandList {
 
     // Build UI
     let mut ctx = Window::default();
-    let elem_obj = ctx.run(window_region.area, TestGenerator.into_obj(WidgetId::str("root")).erase()).expect("Failed to build UI");
+    let elem_obj = ctx.run(window_region.area, TestStub.into_obj(element::Id::str("root")).upcast()).expect("Failed to build UI");
 
     // Render UI
     let mut commands = CommandList::default();
-    elem_obj.element.render(window_region, &mut commands);
+    elem_obj.imp.render(window_region, &mut commands);
     return commands;
 }
