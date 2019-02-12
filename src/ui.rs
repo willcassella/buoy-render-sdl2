@@ -2,7 +2,13 @@ use std::rc::Rc;
 use buoy::Context;
 use buoy::render::color;
 use buoy::element::{IntoUIElement, IntoObj, Stub, StubImpl, Widget, Id, Filter, UIElement};
-use buoy::elements::{fill::SolidFill, min_max::{MinMax, VAlign}, border::BlockBorder, list::List};
+use buoy::elements::{
+    fill::SolidFill,
+    min_max::{MinMax, VAlign},
+    border::BlockBorder,
+    list::List,
+    hover::Hover,
+};
 
 #[derive(Clone, Copy)]
 pub struct BlueBox;
@@ -15,16 +21,21 @@ impl StubImpl for BlueBox {
         .into_obj(id.append_str("border"))
         .push(ctx);
 
-            SolidFill::new(color::constants::WHITE)
-            .into_obj(id.append_str("fill"))
+            Hover::new(ctx, Rc::new(move |_| println!("Hovered on element {}!", id)))
+            .into_obj(id.append_str("hover"))
             .push(ctx);
 
-                MinMax::default().width(20_f32).height(10_f32)
-                .into_obj(id.append_str("inner"))
-                .push(ctx).pop();
+                SolidFill::new(color::constants::WHITE)
+                .into_obj(id.append_str("fill"))
+                .push(ctx);
 
-            ctx.pop(); // BlueBox_fill
-        ctx.pop(); // BlueBox)border
+                    MinMax::default().width(20_f32).height(10_f32)
+                    .into_obj(id.append_str("inner"))
+                    .push(ctx).pop();
+
+                ctx.pop(); // fill
+            ctx.pop(); // hover
+        ctx.pop(); // border
     }
 }
 
@@ -36,7 +47,7 @@ impl IntoUIElement for BlueBox {
 pub struct TestStub;
 impl StubImpl for TestStub {
     fn generate(self, ctx: &mut Context) {
-        List::left_to_right().into_obj(Id::str("TestGenerator_stack")).push(ctx);
+        List::bottom_to_top().into_obj(Id::str("TestGenerator_stack")).push(ctx);
 
             BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).into_obj(Id::str("BlueBox_1_padding")).push(ctx);
                 MinMax::default().height(100_f32).v_align(VAlign::Center).into_obj(Id::str("BlueBox_1_max")).push(ctx);

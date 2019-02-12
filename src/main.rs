@@ -15,6 +15,7 @@ use sdl2::render::WindowCanvas;
 use sdl2::rect::Rect;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
+use sdl2::mouse::MouseState;
 
 pub fn main() {
     let sdl_context = sdl2::init().unwrap();
@@ -43,26 +44,53 @@ pub fn main() {
             }
         }
 
-        // Build the UI
+        // Get the window size
         let window_size = canvas.output_size().unwrap();
 
-        let start = Instant::now();
+        // Get the mouse state
+        let mouse_state = MouseState::new(&event_pump);
+
+        //let start = Instant::now();
         let ui_commands = build_ui(window_size.0 as f32, window_size.1 as f32, &mut ctx, &mut first_frame);
-        println!("Built UI in {} ms", start.elapsed().subsec_micros());
+        //println!("Built UI in {} ms", start.elapsed().subsec_micros());
 
         // Render the UI
         canvas.set_draw_color(Color::RGB(0, 0, 0));
         canvas.clear();
-        render_ui(&mut canvas, &ui_commands);
+        render_ui(&mut ctx, &mut canvas, &ui_commands, mouse_state);
         canvas.present();
     }
 }
 
-fn render_ui(canvas: &mut WindowCanvas, commands: &CommandList) {
+fn render_ui(
+    window: &mut Window,
+    canvas: &mut WindowCanvas,
+    commands: &CommandList,
+    mouse: MouseState,
+) {
+    // Render all of the colored quads
     for quad in &commands.colored_quads {
         canvas.set_draw_color(Color::RGBA(quad.color.red(), quad.color.green(), quad.color.blue(), quad.color.alpha()));
         let rect = Rect::new(quad.quad.x as i32, quad.quad.y as i32, quad.quad.width as u32, quad.quad.height as u32);
         canvas.fill_rect(rect).unwrap();
+    }
+
+    // Handle all of the hover quads
+    let mouse_x = mouse.x() as f32;
+    let mouse_y = mouse.y() as f32;
+    for quad in &commands.hover_quads {
+        // Make sure x is within range
+        if quad.quad.x > mouse_x || quad.quad.x + quad.quad.width < mouse_x {
+            continue;
+        }
+
+        // Make sure y is within range
+        if quad.quad.y > mouse_y || quad.quad.y + quad.quad.height < mouse_y {
+            continue;
+        }
+
+        // Activate the action
+        quad.action.clone().map(|action| action(window));
     }
 }
 
