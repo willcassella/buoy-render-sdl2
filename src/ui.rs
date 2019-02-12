@@ -11,7 +11,7 @@ impl StubImpl for BlueBox {
         let id = ctx.element_id();
 
         BlockBorder::uniform(10_f32)
-        .color(color::RGBA8(0x10c0c9ff))
+        .color(color::RGBA8(0x10_C0_C9_FF))
         .into_obj(id.append_str("border"))
         .push(ctx);
 
@@ -45,7 +45,7 @@ impl StubImpl for TestStub {
             ctx.pop(); // BlueBox_1_padding
 
             BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).into_obj(Id::str("BlueBox_2_padding")).push(ctx);
-                MinMax::default().height(200_f32).v_align(VAlign::Center).into_obj(Id::str("BlueBox_2_max")).push(ctx);
+                MinMax::default().height(200_f32).v_align(VAlign::Bottom).into_obj(Id::str("BlueBox_2_max")).push(ctx);
                     BlueBox.into_obj(Id::str("BlueBox_2")).push(ctx).pop();
                 ctx.pop(); // BlueBox_2_max
             ctx.pop(); // BlueBox_2_padding
@@ -57,7 +57,7 @@ impl StubImpl for TestStub {
             ctx.pop(); // BlueBox_3_padding
 
             BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).into_obj(Id::str("BlueBox_4_padding")).push(ctx);
-                MinMax::default().height(400_f32).v_align(VAlign::Center).into_obj(Id::str("BlueBox_4_max")).push(ctx);
+                MinMax::default().height(400_f32).v_align(VAlign::Top).into_obj(Id::str("BlueBox_4_max")).push(ctx);
                     BlueBox.into_obj(Id::str("BlueBox_4")).push(ctx).pop();
                 ctx.pop(); // BlueBox_4_max
             ctx.pop(); // BlueBox_4_padding
@@ -101,9 +101,9 @@ impl Fader {
     }
 
     fn fade_color(&self, col: color::RGBA8) -> color::RGBA8 {
-        let red = (col.red() as f32 * self.value) as u8;
-        let green = (col.green() as f32 * self.value) as u8;
-        let blue = (col.blue() as f32 * self.value) as u8;
+        let red = (f32::from(col.red()) * self.value) as u8;
+        let green = (f32::from(col.green()) * self.value) as u8;
+        let blue = (f32::from(col.blue()) * self.value) as u8;
         color::RGBA8::new(red, green, blue, 0xFF)
     }
 

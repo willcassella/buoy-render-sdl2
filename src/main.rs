@@ -93,5 +93,6 @@ fn build_ui(window_width: f32, window_height: f32, ctx: &mut Window, first_frame
     // Render UI
     let mut commands = CommandList::default();
     elem_obj.imp.render(window_region, &mut commands);
-    return commands;
+
+    commands
 }
