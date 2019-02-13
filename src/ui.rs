@@ -7,7 +7,7 @@ use buoy::elements::{
     min_max::{MinMax, VAlign},
     border::BlockBorder,
     list::List,
-    hover::Hover,
+    hover,
 };
 
 #[derive(Clone, Copy)]
@@ -16,17 +16,22 @@ impl StubImpl for BlueBox {
     fn generate(self, ctx: &mut Context) {
         let id = ctx.element_id();
 
-        BlockBorder::uniform(10_f32)
-        .color(color::RGBA8(0x10_C0_C9_FF))
-        .into_obj(id.append_str("border"))
+        // Create a state for the hover, and push a handler for it
+        let hover_state = ctx.new_state();
+        let fill_id = id.append_str("fill");
+        ctx.next_frame(Rc::new(HoverHandler{ target: fill_id, state: hover_state }));
+
+        hover::Hover::new_no_action(hover_state)
+        .into_obj(id.append_str("hover"))
         .push(ctx);
 
-            Hover::new(ctx, Rc::new(move |_| println!("Hovered on element {}!", id)))
-            .into_obj(id.append_str("hover"))
+            BlockBorder::uniform(10_f32)
+            .color(color::RGBA8(0x10_C0_C9_FF))
+            .into_obj(id.append_str("border"))
             .push(ctx);
 
                 SolidFill::new(color::constants::WHITE)
-                .into_obj(id.append_str("fill"))
+                .into_obj(fill_id)
                 .push(ctx);
 
                     MinMax::default().width(20_f32).height(10_f32)
@@ -34,8 +39,8 @@ impl StubImpl for BlueBox {
                     .push(ctx).pop();
 
                 ctx.pop(); // fill
-            ctx.pop(); // hover
-        ctx.pop(); // border
+            ctx.pop(); // border
+        ctx.pop(); // hover
     }
 }
 
@@ -47,7 +52,7 @@ impl IntoUIElement for BlueBox {
 pub struct TestStub;
 impl StubImpl for TestStub {
     fn generate(self, ctx: &mut Context) {
-        List::bottom_to_top().into_obj(Id::str("TestGenerator_stack")).push(ctx);
+        List::left_to_right().into_obj(Id::str("TestGenerator_stack")).push(ctx);
 
             BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).into_obj(Id::str("BlueBox_1_padding")).push(ctx);
                 MinMax::default().height(100_f32).v_align(VAlign::Center).into_obj(Id::str("BlueBox_1_max")).push(ctx);
@@ -79,20 +84,41 @@ impl StubImpl for TestStub {
                 ctx.pop(); // BlueBox_5_max
             ctx.pop(); // BlueBox_5_padding
 
-            // for _ in 0..100 {
-            //     BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).into_obj(Id::str("BlueBox_padding")).push(ctx);
-            //         MinMax::default().height(500_f32).v_align(VAlign::Center).into_obj(Id::str("BlueBox_x_max")).push(ctx);
-            //             BlueBox.into_obj(Id::str("BlueBox_x")).push(ctx).pop();
-            //         ctx.pop(); // BlueBox_5_max
-            //     ctx.pop(); // BlueBox_5_padding
-            // }
-
         ctx.pop(); // TestGenerator_stack
     }
 }
 
 impl IntoUIElement for TestStub {
     type Target = Stub<TestStub>;
+}
+
+#[derive(Clone, Copy)]
+pub struct HoverHandler {
+    target: Id,
+    state: hover::HoverState,
+}
+
+impl Filter for HoverHandler {
+    fn filter(&self, ctx: &mut Context, mut elem: UIElement) {
+        let elem = if elem.id == self.target {
+            if ctx.read_state(self.state) {
+                // Modify the color
+                let mut elem = elem.downcast::<Widget<SolidFill>>().ok().unwrap();
+                elem.imp.color = color::constants::RED;
+                elem.upcast()
+            } else {
+                elem
+            }
+        } else {
+            elem.attach_filter_post(Rc::new(*self));
+            elem
+        };
+
+        // Put it back into the context
+        ctx.push(elem);
+            ctx.children();
+        ctx.pop();
+    }
 }
 
 #[derive(Clone, Copy)]

@@ -50,9 +50,9 @@ pub fn main() {
         // Get the mouse state
         let mouse_state = MouseState::new(&event_pump);
 
-        //let start = Instant::now();
+        let start = Instant::now();
         let ui_commands = build_ui(window_size.0 as f32, window_size.1 as f32, &mut ctx, &mut first_frame);
-        //println!("Built UI in {} ms", start.elapsed().subsec_micros());
+        println!("Built UI in {} ms", start.elapsed().subsec_micros());
 
         // Render the UI
         canvas.set_draw_color(Color::RGB(0, 0, 0));
@@ -91,6 +91,9 @@ fn render_ui(
 
         // Activate the action
         quad.action.clone().map(|action| action(window));
+
+        // Write the state
+        window.write_state(quad.active_state, true);
     }
 }
 
