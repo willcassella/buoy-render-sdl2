@@ -1,8 +1,18 @@
 use std::rc::Rc;
 use buoy::Context;
 use buoy::render::color;
-use buoy::element::{IntoUIElement, IntoObj, Stub, StubImpl, Widget, Id, Filter, UIElement};
-use buoy::elements::{
+use buoy::element::{
+    IntoUIElement,
+    IntoObj,
+    Wrap,
+    Id,
+    UIFilter,
+    UIFilterImpl,
+    FilterStack,
+    UIElement,
+    UIElementImpl
+};
+use buoy::primitives::{
     fill::SolidFill,
     min_max::{MinMax, VAlign},
     border::BlockBorder,
@@ -12,84 +22,76 @@ use buoy::elements::{
 
 #[derive(Clone, Copy)]
 pub struct BlueBox;
-impl StubImpl for BlueBox {
-    fn generate(self, ctx: &mut Context) {
+impl UIElementImpl for BlueBox {
+    fn run(self: Box<Self>, ctx: &mut Context) {
         let id = ctx.element_id();
 
         // Create a state for the hover, and push a handler for it
         let hover_state = ctx.new_state();
         let fill_id = id.append_str("fill");
-        ctx.next_frame(Rc::new(HoverHandler{ target: fill_id, state: hover_state }));
+        ctx.filter_next_frame_pre(Rc::new(HoverHandler{ target: fill_id, state: hover_state }));
 
         hover::Hover::new_no_action(hover_state)
         .into_obj(id.append_str("hover"))
-        .push(ctx);
+        .begin(ctx);
 
             BlockBorder::uniform(10_f32)
             .color(color::RGBA8(0x10_C0_C9_FF))
             .into_obj(id.append_str("border"))
-            .push(ctx);
+            .begin(ctx);
 
                 SolidFill::new(color::constants::WHITE)
                 .into_obj(fill_id)
-                .push(ctx);
+                .begin(ctx);
 
                     MinMax::default().width(20_f32).height(10_f32)
                     .into_obj(id.append_str("inner"))
-                    .push(ctx).pop();
+                    .begin(ctx).end();
 
-                ctx.pop(); // fill
-            ctx.pop(); // border
-        ctx.pop(); // hover
+                ctx.end(); // fill
+            ctx.end(); // border
+        ctx.end(); // hover
     }
-}
-
-impl IntoUIElement for BlueBox {
-    type Target = Stub<BlueBox>;
 }
 
 #[derive(Clone, Copy)]
 pub struct TestStub;
-impl StubImpl for TestStub {
-    fn generate(self, ctx: &mut Context) {
-        List::left_to_right().into_obj(Id::str("TestGenerator_stack")).push(ctx);
+impl UIElementImpl for TestStub {
+    fn run(self: Box<Self>, ctx: &mut Context) {
+        List::left_to_right().into_obj(Id::str("TestGenerator_stack")).begin(ctx);
 
-            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).into_obj(Id::str("BlueBox_1_padding")).push(ctx);
-                MinMax::default().height(100_f32).v_align(VAlign::Center).into_obj(Id::str("BlueBox_1_max")).push(ctx);
-                    BlueBox.into_obj(Id::str("BlueBox_1")).push(ctx).pop();
-                ctx.pop(); // BlueBox_1_max
-            ctx.pop(); // BlueBox_1_padding
+            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).into_obj(Id::str("BlueBox_1_padding")).begin(ctx);
+                MinMax::default().height(100_f32).v_align(VAlign::Center).into_obj(Id::str("BlueBox_1_max")).begin(ctx);
+                    BlueBox.into_obj(Id::str("BlueBox_1")).begin(ctx).end();
+                ctx.end(); // BlueBox_1_max
+            ctx.end(); // BlueBox_1_padding
 
-            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).into_obj(Id::str("BlueBox_2_padding")).push(ctx);
-                MinMax::default().height(200_f32).v_align(VAlign::Bottom).into_obj(Id::str("BlueBox_2_max")).push(ctx);
-                    BlueBox.into_obj(Id::str("BlueBox_2")).push(ctx).pop();
-                ctx.pop(); // BlueBox_2_max
-            ctx.pop(); // BlueBox_2_padding
+            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).into_obj(Id::str("BlueBox_2_padding")).begin(ctx);
+                MinMax::default().height(200_f32).v_align(VAlign::Bottom).into_obj(Id::str("BlueBox_2_max")).begin(ctx);
+                    BlueBox.into_obj(Id::str("BlueBox_2")).begin(ctx).end();
+                ctx.end(); // BlueBox_2_max
+            ctx.end(); // BlueBox_2_padding
 
-            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).into_obj(Id::str("BlueBox_3_padding")).push(ctx);
-                MinMax::default().height(300_f32).v_align(VAlign::Center).into_obj(Id::str("BlueBox_3_max")).push(ctx);
-                    BlueBox.into_obj(Id::str("BlueBox_3")).push(ctx).pop();
-                ctx.pop(); // BlueBox_3_max
-            ctx.pop(); // BlueBox_3_padding
+            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).into_obj(Id::str("BlueBox_3_padding")).begin(ctx);
+                MinMax::default().height(300_f32).v_align(VAlign::Center).into_obj(Id::str("BlueBox_3_max")).begin(ctx);
+                    BlueBox.into_obj(Id::str("BlueBox_3")).begin(ctx).end();
+                ctx.end(); // BlueBox_3_max
+            ctx.end(); // BlueBox_3_padding
 
-            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).into_obj(Id::str("BlueBox_4_padding")).push(ctx);
-                MinMax::default().height(400_f32).v_align(VAlign::Top).into_obj(Id::str("BlueBox_4_max")).push(ctx);
-                    BlueBox.into_obj(Id::str("BlueBox_4")).push(ctx).pop();
-                ctx.pop(); // BlueBox_4_max
-            ctx.pop(); // BlueBox_4_padding
+            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).into_obj(Id::str("BlueBox_4_padding")).begin(ctx);
+                MinMax::default().height(400_f32).v_align(VAlign::Top).into_obj(Id::str("BlueBox_4_max")).begin(ctx);
+                    BlueBox.into_obj(Id::str("BlueBox_4")).begin(ctx).end();
+                ctx.end(); // BlueBox_4_max
+            ctx.end(); // BlueBox_4_padding
 
-            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).into_obj(Id::str("BlueBox_5_padding")).push(ctx);
-                MinMax::default().height(500_f32).v_align(VAlign::Center).into_obj(Id::str("BlueBox_5_max")).push(ctx);
-                    BlueBox.into_obj(Id::str("BlueBox_5")).push(ctx).pop();
-                ctx.pop(); // BlueBox_5_max
-            ctx.pop(); // BlueBox_5_padding
+            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).into_obj(Id::str("BlueBox_5_padding")).begin(ctx);
+                MinMax::default().height(500_f32).v_align(VAlign::Center).into_obj(Id::str("BlueBox_5_max")).begin(ctx);
+                    BlueBox.into_obj(Id::str("BlueBox_5")).begin(ctx).end();
+                ctx.end(); // BlueBox_5_max
+            ctx.end(); // BlueBox_5_padding
 
-        ctx.pop(); // TestGenerator_stack
+        ctx.end(); // TestGenerator_stack
     }
-}
-
-impl IntoUIElement for TestStub {
-    type Target = Stub<TestStub>;
 }
 
 #[derive(Clone, Copy)]
@@ -98,26 +100,34 @@ pub struct HoverHandler {
     state: hover::HoverState,
 }
 
-impl Filter for HoverHandler {
-    fn filter(&self, ctx: &mut Context, mut elem: UIElement) {
+impl UIFilterImpl for HoverHandler {
+    fn element(
+        &self,
+        ctx: &mut Context,
+        mut elem: UIElement,
+        filters: &mut FilterStack,
+    ) {
+        // If this is the element we're looking for
         let elem = if elem.id == self.target {
+            // If the element was hovered
             if ctx.read_state(self.state) {
                 // Modify the color
-                let mut elem = elem.downcast::<Widget<SolidFill>>().ok().unwrap();
+                let mut elem = elem.downcast::<Wrap<SolidFill>>().ok().unwrap();
                 elem.imp.color = color::constants::RED;
                 elem.upcast()
             } else {
                 elem
             }
         } else {
-            elem.attach_filter_post(Rc::new(*self));
+            // Recurse
+            filters.pre_filter(Rc::new(*self));
             elem
         };
 
         // Put it back into the context
-        ctx.push(elem);
-            ctx.children();
-        ctx.pop();
+        ctx.element_begin(elem);
+            ctx.children_all();
+        ctx.end();
     }
 }
 
@@ -158,26 +168,33 @@ impl Fader {
     }
 }
 
-impl Filter for Fader {
-    fn filter(&self, ctx: &mut Context, mut elem: UIElement) {
-        if elem.id == self.target {
+impl UIFilterImpl for Fader {
+    fn element(
+        &self,
+        ctx: &mut Context,
+        mut elem: UIElement,
+        filters: &mut FilterStack,
+    ) {
+        // If this is the element we're looking for
+        let elem = if elem.id == self.target {
             // Modify the color
-            let mut elem = elem.downcast::<Widget<BlockBorder>>().ok().unwrap();
+            let mut elem = elem.downcast::<Wrap<BlockBorder>>().ok().unwrap();
             elem.imp.color = self.fade_color(elem.imp.color);
 
-            // Put it back into the context
-           ctx.push(elem.upcast());
-                ctx.children();
-            ctx.pop();
-
             // Create a new filter, with a different value
-            ctx.next_frame(Rc::new(self.next()));
+            ctx.filter_next_frame_pre(Rc::new(self.next()));
+
+            elem.upcast()
         } else {
-            elem.attach_filter_post(Rc::new(*self));
-            ctx.push(elem);
-                ctx.children();
-            ctx.pop();
-        }
+            // Recurse
+            filters.pre_filter(Rc::new(*self));
+            elem
+        };
+
+        // Put the element back into the context
+        ctx.element_begin(elem);
+            ctx.children_all();
+        ctx.end();
     }
 }
 
@@ -219,24 +236,33 @@ impl Grower {
     }
 }
 
-impl Filter for Grower {
-    fn filter(&self, ctx: &mut Context, mut elem: UIElement) {
-        if elem.id == self.target {
-            let mut elem = elem.downcast::<Widget<MinMax>>().ok().unwrap();
+impl UIFilterImpl for Grower {
+    fn element(
+        &self,
+        ctx: &mut Context,
+        mut elem: UIElement,
+        filters: &mut FilterStack,
+    ) {
+        // If this is the element we're looking for
+        let elem = if elem.id == self.target {
+            let mut elem = elem.downcast::<Wrap<MinMax>>().ok().unwrap();
+
+            // Apply the effect
             self.grow(&mut *elem.imp);
 
-            // Put it back in the context
-            ctx.push(elem.upcast());
-                ctx.children();
-            ctx.pop();
-
             // Create a new filter for the next frame
-            ctx.next_frame(Rc::new(self.next()));
+            ctx.filter_next_frame_pre(Rc::new(self.next()));
+
+            elem.upcast()
         } else {
-            elem.attach_filter_post(Rc::new(*self));
-            ctx.push(elem);
-                ctx.children();
-            ctx.pop();
-        }
+            // Recurse
+            filters.pre_filter(Rc::new(*self));
+            elem
+        };
+
+        // Put it back into the context
+        ctx.element_begin(elem);
+            ctx.children_all();
+        ctx.end();
     }
 }

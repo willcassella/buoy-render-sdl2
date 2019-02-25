@@ -112,10 +112,10 @@ fn build_ui(window_width: f32, window_height: f32, ctx: &mut Window, first_frame
     // Create a fader for one of the elements
     if *first_frame {
         let fader = Fader::new(element::Id::str("BlueBox_2").append_str("border"));
-        ctx.attach_frame_filter_post(Rc::new(fader));
+        ctx.filter_frame_pre(Rc::new(fader));
 
         let grower = Grower::new(element::Id::str("BlueBox_2").append_str("inner"));
-        ctx.attach_frame_filter_post(Rc::new(grower));
+        ctx.filter_frame_pre(Rc::new(grower));
         *first_frame = false;
     }
 
