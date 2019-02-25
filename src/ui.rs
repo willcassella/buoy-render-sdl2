@@ -2,15 +2,15 @@ use std::rc::Rc;
 use buoy::Context;
 use buoy::render::color;
 use buoy::element::{
-    IntoUIElement,
+    IntoUIWidget,
     IntoObj,
     Wrap,
     Id,
     UIFilter,
     UIFilterImpl,
     FilterStack,
-    UIElement,
-    UIElementImpl
+    UIWidget,
+    UIWidgetImpl,
 };
 use buoy::primitives::{
     fill::SolidFill,
@@ -22,14 +22,14 @@ use buoy::primitives::{
 
 #[derive(Clone, Copy)]
 pub struct BlueBox;
-impl UIElementImpl for BlueBox {
+impl UIWidgetImpl for BlueBox {
     fn run(self: Box<Self>, ctx: &mut Context) {
-        let id = ctx.element_id();
+        let id = ctx.widget_id();
 
         // Create a state for the hover, and push a handler for it
         let hover_state = ctx.new_state();
         let fill_id = id.append_str("fill");
-        ctx.filter_next_frame_pre(Rc::new(HoverHandler{ target: fill_id, state: hover_state }));
+        ctx.filter_pre_next_frame(Rc::new(HoverHandler{ target: fill_id, state: hover_state }));
 
         hover::Hover::new_no_action(hover_state)
         .into_obj(id.append_str("hover"))
@@ -56,7 +56,7 @@ impl UIElementImpl for BlueBox {
 
 #[derive(Clone, Copy)]
 pub struct TestStub;
-impl UIElementImpl for TestStub {
+impl UIWidgetImpl for TestStub {
     fn run(self: Box<Self>, ctx: &mut Context) {
         List::left_to_right().into_obj(Id::str("TestGenerator_stack")).begin(ctx);
 
@@ -101,31 +101,31 @@ pub struct HoverHandler {
 }
 
 impl UIFilterImpl for HoverHandler {
-    fn element(
+    fn widget(
         &self,
         ctx: &mut Context,
-        mut elem: UIElement,
+        mut widget: UIWidget,
         filters: &mut FilterStack,
     ) {
         // If this is the element we're looking for
-        let elem = if elem.id == self.target {
+        let widget = if widget.id == self.target {
             // If the element was hovered
             if ctx.read_state(self.state) {
                 // Modify the color
-                let mut elem = elem.downcast::<Wrap<SolidFill>>().ok().unwrap();
-                elem.imp.color = color::constants::RED;
-                elem.upcast()
+                let mut widget = widget.downcast::<Wrap<SolidFill>>().ok().unwrap();
+                widget.imp.color = color::constants::RED;
+                widget.upcast()
             } else {
-                elem
+                widget
             }
         } else {
             // Recurse
-            filters.pre_filter(Rc::new(*self));
-            elem
+            filters.filter_pre(Rc::new(*self));
+            widget
         };
 
         // Put it back into the context
-        ctx.element_begin(elem);
+        ctx.widget_begin(widget);
             ctx.children_all();
         ctx.end();
     }
@@ -169,30 +169,30 @@ impl Fader {
 }
 
 impl UIFilterImpl for Fader {
-    fn element(
+    fn widget(
         &self,
         ctx: &mut Context,
-        mut elem: UIElement,
+        mut widget: UIWidget,
         filters: &mut FilterStack,
     ) {
-        // If this is the element we're looking for
-        let elem = if elem.id == self.target {
+        // If this is the widget we're looking for
+        let widget = if widget.id == self.target {
             // Modify the color
-            let mut elem = elem.downcast::<Wrap<BlockBorder>>().ok().unwrap();
-            elem.imp.color = self.fade_color(elem.imp.color);
+            let mut widget = widget.downcast::<Wrap<BlockBorder>>().ok().unwrap();
+            widget.imp.color = self.fade_color(widget.imp.color);
 
             // Create a new filter, with a different value
-            ctx.filter_next_frame_pre(Rc::new(self.next()));
+            ctx.filter_pre_next_frame(Rc::new(self.next()));
 
-            elem.upcast()
+            widget.upcast()
         } else {
             // Recurse
-            filters.pre_filter(Rc::new(*self));
-            elem
+            filters.filter_pre(Rc::new(*self));
+            widget
         };
 
-        // Put the element back into the context
-        ctx.element_begin(elem);
+        // Put the widget back into the context
+        ctx.widget_begin(widget);
             ctx.children_all();
         ctx.end();
     }
@@ -237,31 +237,31 @@ impl Grower {
 }
 
 impl UIFilterImpl for Grower {
-    fn element(
+    fn widget(
         &self,
         ctx: &mut Context,
-        mut elem: UIElement,
+        widget: UIWidget,
         filters: &mut FilterStack,
     ) {
-        // If this is the element we're looking for
-        let elem = if elem.id == self.target {
-            let mut elem = elem.downcast::<Wrap<MinMax>>().ok().unwrap();
+        // If this is the widget we're looking for
+        let widget = if widget.id == self.target {
+            let mut widget = widget.downcast::<Wrap<MinMax>>().ok().unwrap();
 
             // Apply the effect
-            self.grow(&mut *elem.imp);
+            self.grow(&mut *widget.imp);
 
             // Create a new filter for the next frame
-            ctx.filter_next_frame_pre(Rc::new(self.next()));
+            ctx.filter_pre_next_frame(Rc::new(self.next()));
 
-            elem.upcast()
+            widget.upcast()
         } else {
             // Recurse
-            filters.pre_filter(Rc::new(*self));
-            elem
+            filters.filter_pre(Rc::new(*self));
+            widget
         };
 
         // Put it back into the context
-        ctx.element_begin(elem);
+        ctx.widget_begin(widget);
             ctx.children_all();
         ctx.end();
     }
