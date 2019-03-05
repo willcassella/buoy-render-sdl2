@@ -3,7 +3,6 @@ use std::rc::Rc;
 
 use buoy::{Window, element};
 use buoy::layout::{Point, Area, Region};
-use buoy::element::IntoObj;
 use buoy::render::CommandList;
 
 mod ui;
@@ -93,7 +92,7 @@ fn render_ui(
         quad.action.clone().map(|action| action(window));
 
         // Write the state
-        window.write_state(quad.active_state, true);
+        window.send_input(quad.active_state, true);
     }
 }
 
@@ -112,10 +111,10 @@ fn build_ui(window_width: f32, window_height: f32, ctx: &mut Window, first_frame
     // Create a fader for one of the widgets
     if *first_frame {
         let fader = Fader::new(element::Id::str("BlueBox_2").append_str("border"));
-        ctx.filter_pre(Rc::new(fader));
+        ctx.filter(Rc::new(fader));
 
         let grower = Grower::new(element::Id::str("BlueBox_2").append_str("inner"));
-        ctx.filter_pre(Rc::new(grower));
+        ctx.filter(Rc::new(grower));
         *first_frame = false;
     }
 
