@@ -1,13 +1,6 @@
-use std::rc::Rc;
-use buoy::Context;
 use buoy::render::color;
-use buoy::element::{
-    Id,
-    UIFilterImpl,
-    FilterStack,
-    UIWidget,
-    UIWidgetImpl,
-};
+use buoy::core::*;
+use element::Id;
 use buoy::primitives::{
     fill::SolidFill,
     space::{Space, VAlign},
@@ -21,7 +14,7 @@ use buoy::builder::{Builder, BuilderContext};
 pub struct BlueBox;
 impl Builder for BlueBox {
     fn run(self, ctx: &mut BuilderContext) {
-        let id = ctx.widget_id();
+        let id = ctx.element_id();
 
         // Create a state for the hover, and push a handler for it
         let hover_input = ctx.new_input();
@@ -29,21 +22,17 @@ impl Builder for BlueBox {
         // ctx.filter_next_frame(Rc::new(HoverHandler{ target: fill_id, state: hover_input }));
 
         hover::Hover::new_no_action(hover_input)
-        .into_obj(id.append_str("hover"))
-        .begin(ctx);
+        .begin(ctx, id.append_str("hover"));
 
             BlockBorder::uniform(10_f32)
             .color(color::RGBA8(0x10_C0_C9_FF))
-            .into_obj(id.append_str("border"))
-            .begin(ctx);
+            .begin(ctx, id.append_str("border"));
 
                 SolidFill::new(color::constants::WHITE)
-                .into_obj(id.append_str("fill"))
-                .begin(ctx);
+                .begin(ctx, id.append_str("fill"));
 
                     Space::default().width(20_f32).height(10_f32)
-                    .into_obj(id.append_str("inner"))
-                    .begin(ctx).end();
+                    .begin(ctx, id.append_str("inner")).end();
 
                 ctx.end(); // fill
             ctx.end(); // border
@@ -55,35 +44,35 @@ impl Builder for BlueBox {
 pub struct TestStub;
 impl Builder for TestStub {
     fn run(self, ctx: &mut BuilderContext) {
-        List::left_to_right().into_obj(Id::str("TestGenerator_stack")).begin(ctx);
+        List::left_to_right().begin(ctx, Id::from("TestGenerator_stack"));
 
-            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).into_obj(Id::str("BlueBox_1_padding")).begin(ctx);
-                Space::default().height(100_f32).v_align(VAlign::Center).into_obj(Id::str("BlueBox_1_max")).begin(ctx);
-                    BlueBox.into_obj(Id::str("BlueBox_1")).begin(ctx).end();
+            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).begin(ctx, Id::from("BlueBox_1_padding"));
+                Space::default().height(100_f32).v_align(VAlign::Center).begin(ctx, Id::from("BlueBox_1_max"));
+                    BlueBox.begin(ctx, Id::from("BlueBox_1")).end();
                 ctx.end(); // BlueBox_1_max
             ctx.end(); // BlueBox_1_padding
 
-            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).into_obj(Id::str("BlueBox_2_padding")).begin(ctx);
-                Space::default().height(200_f32).v_align(VAlign::Bottom).into_obj(Id::str("BlueBox_2_max")).begin(ctx);
-                    BlueBox.into_obj(Id::str("BlueBox_2")).begin(ctx).end();
+            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).begin(ctx, Id::from("BlueBox_2_padding"));
+                Space::default().height(200_f32).v_align(VAlign::Bottom).begin(ctx, Id::from("BlueBox_2_max"));
+                    BlueBox.begin(ctx, Id::from("BlueBox_2")).end();
                 ctx.end(); // BlueBox_2_max
             ctx.end(); // BlueBox_2_padding
 
-            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).into_obj(Id::str("BlueBox_3_padding")).begin(ctx);
-                Space::default().height(300_f32).v_align(VAlign::Center).into_obj(Id::str("BlueBox_3_max")).begin(ctx);
-                    BlueBox.into_obj(Id::str("BlueBox_3")).begin(ctx).end();
+            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).begin(ctx, Id::from("BlueBox_3_padding"));
+                Space::default().height(300_f32).v_align(VAlign::Center).begin(ctx, Id::from("BlueBox_3_max"));
+                    BlueBox.begin(ctx, Id::from("BlueBox_3")).end();
                 ctx.end(); // BlueBox_3_max
             ctx.end(); // BlueBox_3_padding
 
-            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).into_obj(Id::str("BlueBox_4_padding")).begin(ctx);
-                Space::default().height(400_f32).v_align(VAlign::Top).into_obj(Id::str("BlueBox_4_max")).begin(ctx);
-                    BlueBox.into_obj(Id::str("BlueBox_4")).begin(ctx).end();
+            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).begin(ctx, Id::from("BlueBox_4_padding"));
+                Space::default().height(400_f32).v_align(VAlign::Top).begin(ctx, Id::from("BlueBox_4_max"));
+                    BlueBox.begin(ctx, Id::from("BlueBox_4")).end();
                 ctx.end(); // BlueBox_4_max
             ctx.end(); // BlueBox_4_padding
 
-            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).into_obj(Id::str("BlueBox_5_padding")).begin(ctx);
-                Space::default().height(500_f32).v_align(VAlign::Center).into_obj(Id::str("BlueBox_5_max")).begin(ctx);
-                    BlueBox.into_obj(Id::str("BlueBox_5")).begin(ctx).end();
+            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).begin(ctx, Id::from("BlueBox_5_padding"));
+                Space::default().height(500_f32).v_align(VAlign::Center).begin(ctx, Id::from("BlueBox_5_max"));
+                    BlueBox.begin(ctx, Id::from("BlueBox_5")).end();
                 ctx.end(); // BlueBox_5_max
             ctx.end(); // BlueBox_5_padding
 

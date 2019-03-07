@@ -1,10 +1,10 @@
 use std::time::Instant;
 use std::rc::Rc;
 
-use buoy::{Window, element};
+use buoy::{Window};
 use buoy::layout::{Point, Area, Region};
 use buoy::render::CommandList;
-use buoy::element::UIWidget;
+use buoy::core::*;
 
 mod ui;
 use ui::{TestStub};
@@ -106,9 +106,6 @@ fn build_ui(window_width: f32, window_height: f32, ctx: &mut Window, first_frame
         },
     };
 
-    // Create a root widget
-    let root = UIWidget::new(element::Id::str("root"), TestStub);
-
     // Create a fader for one of the widgets
     if *first_frame {
         // let fader = Fader::new(element::Id::str("BlueBox_2").append_str("border"));
@@ -119,7 +116,7 @@ fn build_ui(window_width: f32, window_height: f32, ctx: &mut Window, first_frame
         *first_frame = false;
     }
 
-    let elem_obj = ctx.run(window_region.area, root.upcast()).expect("Failed to build UI");
+    let elem_obj = ctx.run(window_region.area, TestStub).expect("Failed to build UI");
 
     // Render UI
     let mut commands = CommandList::default();
