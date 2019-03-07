@@ -2,9 +2,7 @@ use std::rc::Rc;
 use buoy::Context;
 use buoy::render::color;
 use buoy::element::{
-    archetype,
     Id,
-    UIFilter,
     UIFilterImpl,
     FilterStack,
     UIWidget,
@@ -17,17 +15,18 @@ use buoy::primitives::{
     list::List,
     hover,
 };
+use buoy::builder::{Builder, BuilderContext};
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct BlueBox;
-impl UIWidgetImpl for BlueBox {
-    fn run(self, ctx: &mut Context) {
+impl Builder for BlueBox {
+    fn run(self, ctx: &mut BuilderContext) {
         let id = ctx.widget_id();
 
         // Create a state for the hover, and push a handler for it
         let hover_input = ctx.new_input();
-        let fill_id = id.append_str("fill");
-        ctx.filter_next_frame(Rc::new(HoverHandler{ target: fill_id, state: hover_input }));
+        // let fill_id = id.append_str("fill");
+        // ctx.filter_next_frame(Rc::new(HoverHandler{ target: fill_id, state: hover_input }));
 
         hover::Hover::new_no_action(hover_input)
         .into_obj(id.append_str("hover"))
@@ -39,7 +38,7 @@ impl UIWidgetImpl for BlueBox {
             .begin(ctx);
 
                 SolidFill::new(color::constants::WHITE)
-                .into_obj(fill_id)
+                .into_obj(id.append_str("fill"))
                 .begin(ctx);
 
                     Space::default().width(20_f32).height(10_f32)
@@ -54,8 +53,8 @@ impl UIWidgetImpl for BlueBox {
 
 #[derive(Clone, Copy)]
 pub struct TestStub;
-impl UIWidgetImpl for TestStub {
-    fn run(self, ctx: &mut Context) {
+impl Builder for TestStub {
+    fn run(self, ctx: &mut BuilderContext) {
         List::left_to_right().into_obj(Id::str("TestGenerator_stack")).begin(ctx);
 
             BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).into_obj(Id::str("BlueBox_1_padding")).begin(ctx);
@@ -92,175 +91,175 @@ impl UIWidgetImpl for TestStub {
     }
 }
 
-#[derive(Clone, Copy)]
-pub struct HoverHandler {
-    target: Id,
-    state: hover::HoverState,
-}
+// #[derive(Clone, Copy)]
+// pub struct HoverHandler {
+//     target: Id,
+//     state: hover::HoverState,
+// }
 
-impl UIFilterImpl for HoverHandler {
-    fn widget(
-        &self,
-        ctx: &mut Context,
-        mut widget: UIWidget,
-        filters: &mut FilterStack,
-    ) {
-        // If this is the element we're looking for
-        let widget = if widget.id == self.target {
-            // If the element was hovered
-            if ctx.read_input(self.state) {
-                // Modify the color
-                let mut widget = widget.downcast::<SolidFill>().ok().unwrap();
-                widget.imp.color = color::constants::RED;
-                widget.upcast()
-            } else {
-                widget
-            }
-        } else {
-            // Recurse
-            filters.add_filter(Rc::new(*self));
-            widget
-        };
+// impl UIFilterImpl for HoverHandler {
+//     fn widget(
+//         &self,
+//         ctx: &mut Context,
+//         mut widget: UIWidget,
+//         filters: &mut FilterStack,
+//     ) {
+//         // If this is the element we're looking for
+//         let widget = if widget.id == self.target {
+//             // If the element was hovered
+//             if ctx.read_input(self.state) {
+//                 // Modify the color
+//                 let mut widget = widget.downcast::<SolidFill>().ok().unwrap();
+//                 widget.imp.color = color::constants::RED;
+//                 widget.upcast()
+//             } else {
+//                 widget
+//             }
+//         } else {
+//             // Recurse
+//             filters.add_filter(Rc::new(*self));
+//             widget
+//         };
 
-        // Put it back into the context
-        ctx.widget_begin(widget);
-            ctx.children_all();
-        ctx.end();
-    }
-}
+//         // Put it back into the context
+//         ctx.widget_begin(widget);
+//             ctx.children_all();
+//         ctx.end();
+//     }
+// }
 
-#[derive(Clone, Copy)]
-pub struct Fader {
-    target: Id,
-    value: f32,
-    delta: f32,
-}
+// #[derive(Clone, Copy)]
+// pub struct Fader {
+//     target: Id,
+//     value: f32,
+//     delta: f32,
+// }
 
-impl Fader {
-    pub fn new(target: Id) -> Self {
-        Fader {
-            target,
-            value: 1_f32,
-            delta: -0.01_f32,
-        }
-    }
+// impl Fader {
+//     pub fn new(target: Id) -> Self {
+//         Fader {
+//             target,
+//             value: 1_f32,
+//             delta: -0.01_f32,
+//         }
+//     }
 
-    fn fade_color(&self, col: color::RGBA8) -> color::RGBA8 {
-        let red = (f32::from(col.red()) * self.value) as u8;
-        let green = (f32::from(col.green()) * self.value) as u8;
-        let blue = (f32::from(col.blue()) * self.value) as u8;
-        color::RGBA8::new(red, green, blue, 0xFF)
-    }
+//     fn fade_color(&self, col: color::RGBA8) -> color::RGBA8 {
+//         let red = (f32::from(col.red()) * self.value) as u8;
+//         let green = (f32::from(col.green()) * self.value) as u8;
+//         let blue = (f32::from(col.blue()) * self.value) as u8;
+//         color::RGBA8::new(red, green, blue, 0xFF)
+//     }
 
-    fn next(mut self) -> Self {
-        self.value += self.delta;
-        if self.value > 1_f32 {
-            self.value = 1_f32;
-            self.delta = -0.01_f32;
-        } else if self.value < 0_f32 {
-            self.value = 0_f32;
-            self.delta = 0.01_f32;
-        }
+//     fn next(mut self) -> Self {
+//         self.value += self.delta;
+//         if self.value > 1_f32 {
+//             self.value = 1_f32;
+//             self.delta = -0.01_f32;
+//         } else if self.value < 0_f32 {
+//             self.value = 0_f32;
+//             self.delta = 0.01_f32;
+//         }
 
-        self
-    }
-}
+//         self
+//     }
+// }
 
-impl UIFilterImpl for Fader {
-    fn widget(
-        &self,
-        ctx: &mut Context,
-        mut widget: UIWidget,
-        filters: &mut FilterStack,
-    ) {
-        // If this is the widget we're looking for
-        let widget = if widget.id == self.target {
-            // Modify the color
-            let mut widget = widget.downcast::<BlockBorder>().ok().unwrap();
-            widget.imp.color = self.fade_color(widget.imp.color);
+// impl UIFilterImpl for Fader {
+//     fn widget(
+//         &self,
+//         ctx: &mut Context,
+//         mut widget: UIWidget,
+//         filters: &mut FilterStack,
+//     ) {
+//         // If this is the widget we're looking for
+//         let widget = if widget.id == self.target {
+//             // Modify the color
+//             let mut widget = widget.downcast::<BlockBorder>().ok().unwrap();
+//             widget.imp.color = self.fade_color(widget.imp.color);
 
-            // Create a new filter, with a different value
-            ctx.filter_next_frame(Rc::new(self.next()));
+//             // Create a new filter, with a different value
+//             ctx.filter_next_frame(Rc::new(self.next()));
 
-            widget.upcast()
-        } else {
-            // Recurse
-            filters.add_filter(Rc::new(*self));
-            widget
-        };
+//             widget.upcast()
+//         } else {
+//             // Recurse
+//             filters.add_filter(Rc::new(*self));
+//             widget
+//         };
 
-        // Put the widget back into the context
-        ctx.widget_begin(widget);
-            ctx.children_all();
-        ctx.end();
-    }
-}
+//         // Put the widget back into the context
+//         ctx.widget_begin(widget);
+//             ctx.children_all();
+//         ctx.end();
+//     }
+// }
 
-#[derive(Clone, Copy)]
-pub struct Grower {
-    pub target: Id,
-    value: f32,
-    max: f32,
-    min: f32,
-    delta: f32,
-}
+// #[derive(Clone, Copy)]
+// pub struct Grower {
+//     pub target: Id,
+//     value: f32,
+//     max: f32,
+//     min: f32,
+//     delta: f32,
+// }
 
-impl Grower {
-    pub fn new(target: Id) -> Self {
-        Grower {
-            target,
-            value: 100_f32,
-            max: 200_f32,
-            min: 20_f32,
-            delta: 0.5_f32,
-        }
-    }
+// impl Grower {
+//     pub fn new(target: Id) -> Self {
+//         Grower {
+//             target,
+//             value: 100_f32,
+//             max: 200_f32,
+//             min: 20_f32,
+//             delta: 0.5_f32,
+//         }
+//     }
 
-    pub fn grow(&self, bounds: &mut Space) {
-        *bounds = bounds.width(self.value);
-    }
+//     pub fn grow(&self, bounds: &mut Space) {
+//         *bounds = bounds.width(self.value);
+//     }
 
-    pub fn next(mut self) -> Self {
-        self.value += self.delta;
-        if self.value > self.max {
-            self.value = self.max;
-            self.delta = -self.delta;
-        } else if self.value < self.min {
-            self.value = self.min;
-            self.delta = -self.delta;
-        }
+//     pub fn next(mut self) -> Self {
+//         self.value += self.delta;
+//         if self.value > self.max {
+//             self.value = self.max;
+//             self.delta = -self.delta;
+//         } else if self.value < self.min {
+//             self.value = self.min;
+//             self.delta = -self.delta;
+//         }
 
-        self
-    }
-}
+//         self
+//     }
+// }
 
-impl UIFilterImpl for Grower {
-    fn widget(
-        &self,
-        ctx: &mut Context,
-        widget: UIWidget,
-        filters: &mut FilterStack,
-    ) {
-        // If this is the widget we're looking for
-        let widget = if widget.id == self.target {
-            let mut widget = widget.downcast::<Space>().ok().unwrap();
+// impl UIFilterImpl for Grower {
+//     fn widget(
+//         &self,
+//         ctx: &mut Context,
+//         widget: UIWidget,
+//         filters: &mut FilterStack,
+//     ) {
+//         // If this is the widget we're looking for
+//         let widget = if widget.id == self.target {
+//             let mut widget = widget.downcast::<Space>().ok().unwrap();
 
-            // Apply the effect
-            self.grow(&mut widget.imp);
+//             // Apply the effect
+//             self.grow(&mut widget.imp);
 
-            // Create a new filter for the next frame
-            ctx.filter_next_frame(Rc::new(self.next()));
+//             // Create a new filter for the next frame
+//             ctx.filter_next_frame(Rc::new(self.next()));
 
-            widget.upcast()
-        } else {
-            // Recurse
-            filters.add_filter(Rc::new(*self));
-            widget
-        };
+//             widget.upcast()
+//         } else {
+//             // Recurse
+//             filters.add_filter(Rc::new(*self));
+//             widget
+//         };
 
-        // Put it back into the context
-        ctx.widget_begin(widget);
-            ctx.children_all();
-        ctx.end();
-    }
-}
+//         // Put it back into the context
+//         ctx.widget_begin(widget);
+//             ctx.children_all();
+//         ctx.end();
+//     }
+// }

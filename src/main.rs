@@ -4,9 +4,10 @@ use std::rc::Rc;
 use buoy::{Window, element};
 use buoy::layout::{Point, Area, Region};
 use buoy::render::CommandList;
+use buoy::element::UIWidget;
 
 mod ui;
-use ui::{TestStub, Fader, Grower};
+use ui::{TestStub};
 
 extern crate sdl2;
 use sdl2::pixels::Color;
@@ -106,15 +107,15 @@ fn build_ui(window_width: f32, window_height: f32, ctx: &mut Window, first_frame
     };
 
     // Create a root widget
-    let root = TestStub.into_obj(element::Id::str("root"));
+    let root = UIWidget::new(element::Id::str("root"), TestStub);
 
     // Create a fader for one of the widgets
     if *first_frame {
-        let fader = Fader::new(element::Id::str("BlueBox_2").append_str("border"));
-        ctx.filter(Rc::new(fader));
+        // let fader = Fader::new(element::Id::str("BlueBox_2").append_str("border"));
+        // ctx.filter(Rc::new(fader));
 
-        let grower = Grower::new(element::Id::str("BlueBox_2").append_str("inner"));
-        ctx.filter(Rc::new(grower));
+        // let grower = Grower::new(element::Id::str("BlueBox_2").append_str("inner"));
+        // ctx.filter(Rc::new(grower));
         *first_frame = false;
     }
 
