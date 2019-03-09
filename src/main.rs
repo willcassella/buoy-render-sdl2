@@ -1,10 +1,8 @@
 use std::time::Instant;
-use std::rc::Rc;
 
 use buoy::{Window};
 use buoy::layout::{Point, Area, Region};
 use buoy::render::CommandList;
-use buoy::core::*;
 
 mod ui;
 use ui::{TestStub};
