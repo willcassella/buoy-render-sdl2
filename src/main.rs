@@ -1,7 +1,6 @@
 use std::time::Instant;
 
-use buoy::{Window};
-use buoy::layout::{Point, Area, Region};
+use buoy::prelude::*;
 use buoy::render::CommandList;
 
 mod ui;
