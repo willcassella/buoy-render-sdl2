@@ -4,7 +4,7 @@ use buoy::prelude::*;
 use buoy::render::CommandList;
 
 mod ui;
-use ui::{TestStub};
+use ui::{Repeating};
 
 extern crate sdl2;
 use sdl2::pixels::Color;
@@ -28,6 +28,7 @@ pub fn main() {
     let mut canvas = window.into_canvas().present_vsync().build().unwrap();
     let mut event_pump = sdl_context.event_pump().unwrap();
     let mut ctx = Window::default();
+    let mut ui_commands = CommandList::default();
 
     'running: loop {
         // Handle events
@@ -47,9 +48,8 @@ pub fn main() {
         // Get the mouse state
         let mouse_state = MouseState::new(&event_pump);
 
-        let start = Instant::now();
-        let ui_commands = build_ui(window_size.0 as f32, window_size.1 as f32, &mut ctx, &mut first_frame);
-        println!("Built UI in {} ms", start.elapsed().subsec_micros());
+        ui_commands.clear();
+        build_ui(&mut ui_commands, window_size.0 as f32, window_size.1 as f32, &mut ctx, &mut first_frame);
 
         // Render the UI
         canvas.set_draw_color(Color::RGB(0, 0, 0));
@@ -94,7 +94,13 @@ fn render_ui(
     }
 }
 
-fn build_ui(window_width: f32, window_height: f32, ctx: &mut Window, first_frame: &mut bool) -> CommandList {
+fn build_ui(
+    commands: &mut CommandList,
+    window_width: f32,
+    window_height: f32,
+    ctx: &mut Window,
+    first_frame: &mut bool
+) {
     let window_region = Region {
         pos: Point::zero(),
         area: Area {
@@ -113,11 +119,9 @@ fn build_ui(window_width: f32, window_height: f32, ctx: &mut Window, first_frame
         *first_frame = false;
     }
 
-    let elem_obj = ctx.run(window_region.area, TestStub).expect("Failed to build UI");
+    let elem_obj = ctx.run(window_region.area, Repeating).expect("Failed to build UI");
 
-    // Render UI
-    let mut commands = CommandList::default();
-    elem_obj.imp.render(window_region, &mut commands);
-
-    commands
+    let render_start = Instant::now();
+    elem_obj.imp.render(window_region, commands);
+    println!("Generated rendering commands in {} ms", render_start.elapsed().subsec_micros());
 }

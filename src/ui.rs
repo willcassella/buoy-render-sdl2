@@ -14,7 +14,10 @@ use buoy::builder::*;
 #[derive(Clone)]
 pub struct BlueBox;
 impl Builder for BlueBox {
-    fn run(self, ctx: &mut BuilderContext) {
+    fn run<C: BuilderContext>(
+        self,
+        ctx: &mut C,
+    ) {
         let id = ctx.element_id();
 
         // Create a state for the hover, and push a handler for it
@@ -44,40 +47,54 @@ impl Builder for BlueBox {
 #[derive(Clone, Copy)]
 pub struct TestStub;
 impl Builder for TestStub {
-    fn run(self, ctx: &mut BuilderContext) {
+    fn run<C: BuilderContext>(
+        self,
+        ctx: &mut C,
+    ) {
+        BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).begin(ctx, Id::from("BlueBox_1_padding"));
+            Space::default().height(100_f32).v_align(VAlign::Center).begin(ctx, Id::from("BlueBox_1_max"));
+                BlueBox.begin(ctx, Id::from("BlueBox_1")).end();
+            ctx.end(); // BlueBox_1_max
+        ctx.end(); // BlueBox_1_padding
+
+        BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).begin(ctx, Id::from("BlueBox_2_padding"));
+            Space::default().height(200_f32).v_align(VAlign::Bottom).begin(ctx, Id::from("BlueBox_2_max"));
+                BlueBox.begin(ctx, Id::from("BlueBox_2")).end();
+            ctx.end(); // BlueBox_2_max
+        ctx.end(); // BlueBox_2_padding
+
+        BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).begin(ctx, Id::from("BlueBox_3_padding"));
+            Space::default().height(300_f32).v_align(VAlign::Center).begin(ctx, Id::from("BlueBox_3_max"));
+                BlueBox.begin(ctx, Id::from("BlueBox_3")).end();
+            ctx.end(); // BlueBox_3_max
+        ctx.end(); // BlueBox_3_padding
+
+        BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).begin(ctx, Id::from("BlueBox_4_padding"));
+            Space::default().height(400_f32).v_align(VAlign::Top).begin(ctx, Id::from("BlueBox_4_max"));
+                BlueBox.begin(ctx, Id::from("BlueBox_4")).end();
+            ctx.end(); // BlueBox_4_max
+        ctx.end(); // BlueBox_4_padding
+
+        BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).begin(ctx, Id::from("BlueBox_5_padding"));
+            Space::default().height(500_f32).v_align(VAlign::Center).begin(ctx, Id::from("BlueBox_5_max"));
+                BlueBox.begin(ctx, Id::from("BlueBox_5")).end();
+            ctx.end(); // BlueBox_5_max
+        ctx.end(); // BlueBox_5_padding
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct Repeating;
+impl Builder for Repeating {
+    fn run<C: BuilderContext>(
+        self,
+        ctx: &mut C,
+    ) {
         List::left_to_right().begin(ctx, Id::from("TestGenerator_stack"));
-
-            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).begin(ctx, Id::from("BlueBox_1_padding"));
-                Space::default().height(100_f32).v_align(VAlign::Center).begin(ctx, Id::from("BlueBox_1_max"));
-                    BlueBox.begin(ctx, Id::from("BlueBox_1")).end();
-                ctx.end(); // BlueBox_1_max
-            ctx.end(); // BlueBox_1_padding
-
-            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).begin(ctx, Id::from("BlueBox_2_padding"));
-                Space::default().height(200_f32).v_align(VAlign::Bottom).begin(ctx, Id::from("BlueBox_2_max"));
-                    BlueBox.begin(ctx, Id::from("BlueBox_2")).end();
-                ctx.end(); // BlueBox_2_max
-            ctx.end(); // BlueBox_2_padding
-
-            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).begin(ctx, Id::from("BlueBox_3_padding"));
-                Space::default().height(300_f32).v_align(VAlign::Center).begin(ctx, Id::from("BlueBox_3_max"));
-                    BlueBox.begin(ctx, Id::from("BlueBox_3")).end();
-                ctx.end(); // BlueBox_3_max
-            ctx.end(); // BlueBox_3_padding
-
-            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).begin(ctx, Id::from("BlueBox_4_padding"));
-                Space::default().height(400_f32).v_align(VAlign::Top).begin(ctx, Id::from("BlueBox_4_max"));
-                    BlueBox.begin(ctx, Id::from("BlueBox_4")).end();
-                ctx.end(); // BlueBox_4_max
-            ctx.end(); // BlueBox_4_padding
-
-            BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).begin(ctx, Id::from("BlueBox_5_padding"));
-                Space::default().height(500_f32).v_align(VAlign::Center).begin(ctx, Id::from("BlueBox_5_max"));
-                    BlueBox.begin(ctx, Id::from("BlueBox_5")).end();
-                ctx.end(); // BlueBox_5_max
-            ctx.end(); // BlueBox_5_padding
-
-        ctx.end(); // TestGenerator_stack
+            for _ in 0..100 {
+                TestStub.begin(ctx, Id::from("")).end();
+            }
+        ctx.end();
     }
 }
 
@@ -223,33 +240,33 @@ impl Grower {
     }
 }
 
-impl Filter for Grower {
-    fn element<E: Element, T: TreeProvider>(
-        &self,
-        ctx: &mut TreeContext,
-        id: Id,
-        element: E,
-        children: T,
-        filters: &mut FilterStack,
-    ) {
-        // If this is the widget we're looking for
-        let element = if id == self.target {
-            let mut element = element.downcast::<Space>().ok().unwrap();
+// impl Filter for Grower {
+//     fn element<'a, C: TreeContext<'a>, E: Element, T: TreeProvider>(
+//         &self,
+//         ctx: C,
+//         id: Id,
+//         element: E,
+//         children: T,
+//         filters: &mut FilterStack,
+//     ) {
+//         // If this is the widget we're looking for
+//         let element = if id == self.target {
+//             let mut element = element.downcast::<Space>().ok().unwrap();
 
-            // Apply the effect
-            self.grow(&mut element);
+//             // Apply the effect
+//             self.grow(&mut element);
 
-            // Create a new filter for the next frame
-            ctx.filter_next_frame(Rc::new(self.next()));
+//             // Create a new filter for the next frame
+//             ctx.filter_next_frame(Rc::new(self.next()));
 
-            element.upcast()
-        } else {
-            // Recurse
-            filters.add_filter(Rc::new(*self));
-            element.upcast()
-        };
+//             element.upcast()
+//         } else {
+//             // Recurse
+//             filters.add_filter(Rc::new(*self));
+//             element.upcast()
+//         };
 
-        // Put it back into the context
-        ctx.element(id, element, children);
-    }
-}
+//         // Put it back into the context
+//         ctx.element(id, element, children);
+//     }
+// }
