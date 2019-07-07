@@ -1,100 +1,54 @@
-use std::rc::Rc;
-
 use buoy::prelude::*;
 use buoy::render::color;
 use buoy::primitives::{
-    fill::SolidFill,
-    min::Space,
-    border::BlockBorder,
+    fill::Fill,
+    size::Size,
+    border::Border,
     list::List,
-    hover,
 };
-use buoy::builder::*;
 
 #[derive(Clone)]
 pub struct BlueBox;
-impl Builder for BlueBox {
-    fn run<C: BuilderContext>(
-        self,
-        ctx: &mut C,
-    ) {
+impl Element for BlueBox {
+    fn run(
+        &self,
+        mut ctx: Context,
+    ) -> LayoutObj {
         let id = ctx.element_id();
+        let max_area = ctx.max_area();
+        let mut b = ctx.begin_element(max_area, id.append_str("border"), Border::uniform(10_f32).color(color::RGBA8(0x10_C0_C9_FF)));
 
-        // Create a state for the hover, and push a handler for it
-        let hover_input = ctx.new_input();
-        // let fill_id = id.append_str("fill");
-        // ctx.filter_next_frame(Rc::new(HoverHandler{ target: fill_id, state: hover_input }));
+        Fill::new(color::constants::WHITE)
+        .begin(&mut b, SocketName::default(), id.append_str("fill"));
 
-        hover::Hover::new_no_action(hover_input)
-        .begin(ctx, id.append_str("hover"));
+            Size::default().width(20_f32).height(10_f32)
+            .begin(&mut b, SocketName::default(), id.append_str("inner")).end();
 
-            BlockBorder::uniform(10_f32)
-            .color(color::RGBA8(0x10_C0_C9_FF))
-            .begin(ctx, id.append_str("border"));
+        b.end(); // fill
 
-                SolidFill::new(color::constants::WHITE)
-                .begin(ctx, id.append_str("fill"));
-
-                    Space::default().width(20_f32).height(10_f32)
-                    .begin(ctx, id.append_str("inner")).end();
-
-                ctx.end(); // fill
-            ctx.end(); // border
-        ctx.end(); // hover
-    }
-}
-
-#[derive(Clone, Copy)]
-pub struct TestStub;
-impl Builder for TestStub {
-    fn run<C: BuilderContext>(
-        self,
-        ctx: &mut C,
-    ) {
-        BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).begin(ctx, Id::from("BlueBox_1_padding"));
-            Space::default().height(100_f32).v_align(VAlign::Center).begin(ctx, Id::from("BlueBox_1_max"));
-                BlueBox.begin(ctx, Id::from("BlueBox_1")).end();
-            ctx.end(); // BlueBox_1_max
-        ctx.end(); // BlueBox_1_padding
-
-        BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).begin(ctx, Id::from("BlueBox_2_padding"));
-            Space::default().height(200_f32).v_align(VAlign::Bottom).begin(ctx, Id::from("BlueBox_2_max"));
-                BlueBox.begin(ctx, Id::from("BlueBox_2")).end();
-            ctx.end(); // BlueBox_2_max
-        ctx.end(); // BlueBox_2_padding
-
-        BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).begin(ctx, Id::from("BlueBox_3_padding"));
-            Space::default().height(300_f32).v_align(VAlign::Center).begin(ctx, Id::from("BlueBox_3_max"));
-                BlueBox.begin(ctx, Id::from("BlueBox_3")).end();
-            ctx.end(); // BlueBox_3_max
-        ctx.end(); // BlueBox_3_padding
-
-        BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).begin(ctx, Id::from("BlueBox_4_padding"));
-            Space::default().height(400_f32).v_align(VAlign::Top).begin(ctx, Id::from("BlueBox_4_max"));
-                BlueBox.begin(ctx, Id::from("BlueBox_4")).end();
-            ctx.end(); // BlueBox_4_max
-        ctx.end(); // BlueBox_4_padding
-
-        BlockBorder::default().top(15_f32).bottom(15_f32).right(30_f32).begin(ctx, Id::from("BlueBox_5_padding"));
-            Space::default().height(500_f32).v_align(VAlign::Center).begin(ctx, Id::from("BlueBox_5_max"));
-                BlueBox.begin(ctx, Id::from("BlueBox_5")).end();
-            ctx.end(); // BlueBox_5_max
-        ctx.end(); // BlueBox_5_padding
+        b.finish()
     }
 }
 
 #[derive(Copy, Clone)]
 pub struct Repeating;
-impl Builder for Repeating {
-    fn run<C: BuilderContext>(
-        self,
-        ctx: &mut C,
-    ) {
-        List::left_to_right().begin(ctx, Id::from("TestGenerator_stack"));
-            for _ in 0..100 {
-                TestStub.begin(ctx, Id::from("")).end();
-            }
-        ctx.end();
+impl Element for Repeating {
+    fn run(
+        &self,
+        mut ctx: Context,
+    ) -> LayoutObj {
+        let max_area = ctx.max_area();
+        let mut b = ctx.begin_element(max_area, Id::from("Repeating_stack"), List::left_to_right());
+
+        for _ in 0..100 {
+            Border::default().top(15_f32).bottom(15_f32).right(30_f32).begin(&mut b, SocketName::default(), Id::from("padding"));
+                Size::default().height(100_f32).v_align(VAlign::Center).begin(&mut b, SocketName::default(), Id::from("size"));
+                    BlueBox.begin(&mut b, SocketName::default(), Id::from("BlueBox")).end(); // BlueBox
+                b.end(); // size
+            b.end(); // padding
+        }
+
+        b.finish()
     }
 }
 
@@ -222,7 +176,7 @@ impl Grower {
         }
     }
 
-    pub fn grow(&self, bounds: &mut Space) {
+    pub fn grow(&self, bounds: &mut Size) {
         *bounds = bounds.width(self.value);
     }
 

@@ -6,7 +6,6 @@ use buoy::render::CommandList;
 mod ui;
 use ui::{Repeating};
 
-extern crate sdl2;
 use sdl2::pixels::Color;
 use sdl2::render::WindowCanvas;
 use sdl2::rect::Rect;
@@ -119,9 +118,9 @@ fn build_ui(
         *first_frame = false;
     }
 
-    let elem_obj = ctx.run(window_region.area, Repeating).expect("Failed to build UI");
+    let elem_obj = ctx.run(window_region.area, Repeating);
 
     let render_start = Instant::now();
     elem_obj.imp.render(window_region, commands);
-    println!("Generated rendering commands in {} ms", render_start.elapsed().subsec_micros());
+    println!("Generated rendering commands in {} μs", render_start.elapsed().subsec_micros());
 }
