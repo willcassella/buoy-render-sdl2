@@ -4,21 +4,22 @@ use buoy::prelude::*;
 use buoy::render::CommandList;
 
 mod ui;
-use ui::{Repeating};
+use ui::Repeating;
 
-use sdl2::pixels::Color;
-use sdl2::render::WindowCanvas;
-use sdl2::rect::Rect;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseState;
+use sdl2::pixels::Color;
+use sdl2::rect::Rect;
+use sdl2::render::WindowCanvas;
 
 pub fn main() {
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
 
     let mut first_frame = true;
-    let window = video_subsystem.window("rust-sdl2 demo", 1920, 1080)
+    let window = video_subsystem
+        .window("rust-sdl2 demo", 1920, 1080)
         .position_centered()
         .resizable()
         .build()
@@ -33,10 +34,11 @@ pub fn main() {
         // Handle events
         for event in event_pump.poll_iter() {
             match event {
-                Event::Quit {..} |
-                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
-                    break 'running
-                },
+                Event::Quit { .. }
+                | Event::KeyDown {
+                    keycode: Some(Keycode::Escape),
+                    ..
+                } => break 'running,
                 _ => {}
             }
         }
@@ -48,7 +50,13 @@ pub fn main() {
         let mouse_state = MouseState::new(&event_pump);
 
         ui_commands.clear();
-        build_ui(&mut ui_commands, window_size.0 as f32, window_size.1 as f32, &mut ctx, &mut first_frame);
+        build_ui(
+            &mut ui_commands,
+            window_size.0 as f32,
+            window_size.1 as f32,
+            &mut ctx,
+            &mut first_frame,
+        );
 
         // Render the UI
         canvas.set_draw_color(Color::RGB(0, 0, 0));
@@ -66,8 +74,18 @@ fn render_ui(
 ) {
     // Render all of the colored quads
     for quad in &commands.colored_quads {
-        canvas.set_draw_color(Color::RGBA(quad.color.red(), quad.color.green(), quad.color.blue(), quad.color.alpha()));
-        let rect = Rect::new(quad.quad.x as i32, quad.quad.y as i32, quad.quad.width as u32, quad.quad.height as u32);
+        canvas.set_draw_color(Color::RGBA(
+            quad.color.red(),
+            quad.color.green(),
+            quad.color.blue(),
+            quad.color.alpha(),
+        ));
+        let rect = Rect::new(
+            quad.quad.x as i32,
+            quad.quad.y as i32,
+            quad.quad.width as u32,
+            quad.quad.height as u32,
+        );
         canvas.fill_rect(rect).unwrap();
     }
 
@@ -86,7 +104,9 @@ fn render_ui(
         }
 
         // Activate the action
-        quad.action.clone().map(|action| action(window));
+        if let Some(action) = quad.action.clone() {
+            action(window);
+        }
 
         // Write the state
         window.send_input(quad.active_state, true);
@@ -98,7 +118,7 @@ fn build_ui(
     window_width: f32,
     window_height: f32,
     ctx: &mut Window,
-    first_frame: &mut bool
+    first_frame: &mut bool,
 ) {
     let window_region = Region {
         pos: Point::zero(),
@@ -122,5 +142,8 @@ fn build_ui(
 
     let render_start = Instant::now();
     elem_obj.imp.render(window_region, commands);
-    println!("Generated rendering commands in {} μs", render_start.elapsed().subsec_micros());
+    println!(
+        "Generated rendering commands in {} μs",
+        render_start.elapsed().subsec_micros()
+    );
 }
