@@ -104,12 +104,10 @@ fn render_ui(
         }
 
         // Activate the action
-        if let Some(action) = quad.action.clone() {
-            action(window);
-        }
+        (quad.action)(window, true);
 
         // Write the state
-        window.send_input(quad.active_state, true);
+        //window.send_input(quad.active_state, true);
     }
 }
 
@@ -138,10 +136,11 @@ fn build_ui(
         *first_frame = false;
     }
 
-    let elem_obj = ctx.run(window_region.area, Repeating);
-
     let render_start = Instant::now();
+
+    let elem_obj = ctx.run(window_region.area, Repeating);
     elem_obj.imp.render(window_region, commands);
+
     println!(
         "Generated rendering commands in {} μs",
         render_start.elapsed().subsec_micros()
