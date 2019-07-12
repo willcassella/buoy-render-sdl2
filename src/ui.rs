@@ -1,5 +1,5 @@
 use buoy::prelude::*;
-use buoy::primitives::{border::Border, fill::Fill, list::List, size::Size};
+use buoy::primitives::*;
 use buoy::render::color;
 
 #[derive(Clone)]
@@ -9,21 +9,34 @@ impl Element for BlueBox {
         let max_area = ctx.max_area();
         let mut sub = ctx.open_element(
             max_area,
-            id.str("border"),
-            Border::uniform(10_f32).color(color::RGBA8(0x10_C0_C9_FF)),
+            id.append_str("overlap"),
+            Overlap,
         );
 
-        Size::default()
-        .min_width(20_f32)
-        .begin(&mut sub, SocketName::default(), id.str("size"));
+        Border::build(id.append_str("border"))
+        .uniform(10_f32)
+        .color(color::RGBA8(0x10_C0_C9_FF))
+        .begin(&mut sub);
 
-            Fill::new(color::constants::WHITE)
-            .begin(&mut sub, SocketName::default(), id.str("fill"))
-            .end();
+            Size::build(id.append_str("size"))
+            .min_width(20_f32)
+            .begin(&mut sub);
 
-        sub.end(); // size
+                Fill::build(id.append_str("fill"))
+                .color(color::constants::WHITE)
+                .begin(&mut sub);
+                sub.end(); // fill
 
-        sub.close()
+            sub.end(); // size
+        sub.end(); // border
+
+        // Create a hover state
+        let hover_state = sub.new_state();
+        Hover::build(id.append_str("hover"), hover_state)
+        .begin(&mut sub);
+        sub.end(); // hover
+
+        sub.close() // overlap
     }
 }
 
@@ -32,20 +45,19 @@ pub struct Repeating;
 impl Element for Repeating {
     fn run(&self, mut ctx: Context, id: Id) -> LayoutObj {
         let max_area = ctx.max_area();
-        let mut sub = ctx.open_element(max_area, id.str("list"), List::left_to_right());
+        let mut sub = ctx.open_element(max_area, id.append_str("list"), List::left_to_right());
 
         for i in 0..100 {
-            Border::default()
+            Border::build(id.append_str("padding").append_num(i))
             .right(30_f32)
-            .begin(&mut sub, SocketName::default(), id.str("padding").num(i));
+            .begin(&mut sub);
 
-                Size::default()
+                Size::build(id.append_str("size").append_num(i))
                 .height(100_f32)
                 .v_align(VAlign::Center)
-                .begin(&mut sub, SocketName::default(), id.str("size").num(i));
+                .begin(&mut sub);
 
-                    BlueBox
-                    .begin(&mut sub, SocketName::default(), id.str("BlueBox").num(i))
+                    sub.begin(SocketName::default(), id.append_str("BlueBox").append_num(i), BlueBox)
                     .end();
 
                 sub.end(); // size

@@ -95,19 +95,18 @@ fn render_ui(
     for quad in &commands.hover_quads {
         // Make sure x is within range
         if quad.quad.x > mouse_x || quad.quad.x + quad.quad.width < mouse_x {
+            window.write_state(quad.state, false);
             continue;
         }
 
         // Make sure y is within range
         if quad.quad.y > mouse_y || quad.quad.y + quad.quad.height < mouse_y {
+            window.write_state(quad.state, false);
             continue;
         }
 
-        // Activate the action
-        (quad.action)(window, true);
-
         // Write the state
-        //window.send_input(quad.active_state, true);
+        window.write_state(quad.state, true);
     }
 }
 
