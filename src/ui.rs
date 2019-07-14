@@ -5,36 +5,34 @@ use buoy::render::color;
 #[derive(Clone)]
 pub struct BlueBox;
 impl Element for BlueBox {
-    fn run(&self, mut ctx: Context, id: Id) -> LayoutObj {
+    fn run<'ctx, 'win>(&self, mut ctx: Context<'ctx, 'win>, id: Id) -> LayoutNode<'win> {
         let max_area = ctx.max_area();
-        let mut sub = ctx.open_element(
-            max_area,
-            id.append_str("overlap"),
-            Overlap,
-        );
 
-        Border::build(id.append_str("border"))
-        .uniform(10_f32)
-        .color(color::RGBA8(0x10_C0_C9_FF))
-        .begin(&mut sub);
+        let mut sub = Overlap::build(id.append_str("overlap"))
+        .open(&mut ctx, max_area);
 
-            Size::build(id.append_str("size"))
-            .min_width(20_f32)
+            Border::build(id.append_str("border"))
+            .uniform(10_f32)
+            .color(color::RGBA8(0x10_C0_C9_FF))
             .begin(&mut sub);
 
-                Fill::build(id.append_str("fill"))
-                .color(color::constants::WHITE)
+                Size::build(id.append_str("size"))
+                .min_width(20_f32)
                 .begin(&mut sub);
-                sub.end(); // fill
 
-            sub.end(); // size
-        sub.end(); // border
+                    Fill::build(id.append_str("fill"))
+                    .color(color::constants::WHITE)
+                    .begin(&mut sub);
+                    sub.end(); // fill
 
-        // Create a hover state
-        let hover_state = sub.new_state();
-        Hover::build(id.append_str("hover"), hover_state)
-        .begin(&mut sub);
-        sub.end(); // hover
+                sub.end(); // size
+            sub.end(); // border
+
+            // Create a hover state
+            //let hover_state = sub.new_state();
+            //Hover::build(id.append_str("hover"), hover_state)
+            //.begin(&mut sub);
+            //sub.end(); // hover
 
         sub.close() // overlap
     }
@@ -43,7 +41,7 @@ impl Element for BlueBox {
 #[derive(Copy, Clone)]
 pub struct Repeating;
 impl Element for Repeating {
-    fn run(&self, mut ctx: Context, id: Id) -> LayoutObj {
+    fn run<'ctx, 'win>(&self, mut ctx: Context<'ctx, 'win>, id: Id) -> LayoutNode<'win> {
         let max_area = ctx.max_area();
         let mut sub = ctx.open_element(max_area, id.append_str("list"), List::left_to_right());
 

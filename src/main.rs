@@ -138,7 +138,7 @@ fn build_ui(
     let render_start = Instant::now();
 
     let elem_obj = ctx.run(window_region.area, Repeating);
-    elem_obj.imp.render(window_region, commands);
+    elem_obj.layout.render(window_region, commands);
 
     println!(
         "Generated rendering commands in {} μs",
