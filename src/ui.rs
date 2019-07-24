@@ -8,33 +8,35 @@ impl Element for BlueBox {
     fn run<'ctx, 'win>(&self, mut ctx: Context<'ctx, 'win>, id: Id) -> LayoutNode<'win> {
         let max_area = ctx.max_area();
 
-        let mut sub = Overlap::build(id.append_str("overlap"))
+        let mut sub = Size::build(id.append_str("size"))
+        .width(50_f32)
+        .height(50_f32)
         .open(&mut ctx, max_area);
-
-            Border::build(id.append_str("border"))
-            .uniform(10_f32)
-            .color(color::RGBA8(0x10_C0_C9_FF))
+        {
+            Overlap::build(id.append_str("overlap"))
             .begin(&mut sub);
-
-                Size::build(id.append_str("size"))
-                .min_width(20_f32)
+            {
+                Border::build(id.append_str("border"))
+                .uniform(5_f32)
+                .color(color::RGBA8(0x10_C0_C9_FF))
                 .begin(&mut sub);
+                {
+                        Fill::build(id.append_str("fill"))
+                        .color(color::constants::WHITE)
+                        .begin(&mut sub);
+                        sub.end(); // fill
+                }
+                sub.end(); // border
 
-                    Fill::build(id.append_str("fill"))
-                    .color(color::constants::WHITE)
-                    .begin(&mut sub);
-                    sub.end(); // fill
-
-                sub.end(); // size
-            sub.end(); // border
-
-            // Create a hover state
-            //let hover_state = sub.new_state();
-            //Hover::build(id.append_str("hover"), hover_state)
-            //.begin(&mut sub);
-            //sub.end(); // hover
-
-        sub.close() // overlap
+                // Create a hover state
+                let hover_state = sub.new_state();
+                Hover::build(id.append_str("hover"), hover_state)
+                .begin(&mut sub);
+                sub.end(); // hover
+            }
+            sub.end(); // overlap
+        }
+        sub.close() // size
     }
 }
 
@@ -44,24 +46,18 @@ impl Element for Repeating {
     fn run<'ctx, 'win>(&self, mut ctx: Context<'ctx, 'win>, id: Id) -> LayoutNode<'win> {
         let max_area = ctx.max_area();
         let mut sub = ctx.open_element(max_area, id.append_str("list"), List::left_to_right());
-
-        for i in 0..100 {
-            Border::build(id.append_str("padding").append_num(i))
-            .right(30_f32)
-            .begin(&mut sub);
-
-                Size::build(id.append_str("size").append_num(i))
-                .height(100_f32)
-                .v_align(VAlign::Center)
+        {
+            for i in 0..10 {
+                Border::build(id.append_str("padding").append_num(i))
+                .right(30_f32)
                 .begin(&mut sub);
-
+                {
                     sub.begin(SocketName::default(), id.append_str("BlueBox").append_num(i), BlueBox)
                     .end();
-
-                sub.end(); // size
-            sub.end(); // padding
+                }
+                sub.end(); // padding
+            }
         }
-
         sub.close()
     }
 }
