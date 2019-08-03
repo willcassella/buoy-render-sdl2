@@ -4,7 +4,7 @@ use buoy::prelude::*;
 use buoy::render::CommandList;
 
 mod ui;
-use ui::Repeating;
+use ui::{Repeating};
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -137,7 +137,7 @@ fn build_ui(
 
     let render_start = Instant::now();
 
-    let elem_obj = ctx.run(window_region.area, Repeating);
+    let elem_obj = ctx.run(window_region.area, Repeating, FilterStackBuilder::default());
     elem_obj.layout.render(window_region, commands);
 
     println!(
