@@ -5,7 +5,7 @@ use buoy::prelude::*;
 use buoy::primitives::*;
 use buoy::render::color;
 
-use buoy::util::linked_buffer::LBBox;
+use buoy::util::arena::ABox;
 
 #[derive(Copy, Clone)]
 pub struct RedShift {
@@ -30,9 +30,9 @@ impl Filter for RedShift {
         &self,
         mut ctx: Context<'ctx, 'frm>,
         id: Id,
-        element: LBBox<'frm, dyn Element>
+        element: ABox<'frm, dyn Element>
     ) -> LayoutNode<'frm> {
-        let mut element = *LBBox::downcast::<Fill>(element).ok().unwrap();
+        let mut element = element.downcast::<Fill>().ok().unwrap();
 
         if ctx.read_state(self.state) {
             element.color = color::constants::RED;
@@ -48,7 +48,7 @@ impl Filter for RedShift {
 #[derive(Copy, Clone)]
 pub struct BlueBox;
 impl Element for BlueBox {
-    fn run<'ctx, 'win>(&self, mut ctx: Context<'ctx, 'win>, id: Id) -> LayoutNode<'win> {
+    fn run<'ctx, 'frm>(&self, mut ctx: Context<'ctx, 'frm>, id: Id) -> LayoutNode<'frm> {
         let max_area = ctx.max_area();
         let hover_state = ctx.new_state();
         let fill_id = id.append_str("fill");
@@ -91,7 +91,7 @@ impl Element for BlueBox {
 #[derive(Copy, Clone)]
 pub struct Repeating;
 impl Element for Repeating {
-    fn run<'ctx, 'win>(&self, mut ctx: Context<'ctx, 'win>, id: Id) -> LayoutNode<'win> {
+    fn run<'ctx, 'frm>(&self, mut ctx: Context<'ctx, 'frm>, id: Id) -> LayoutNode<'frm> {
         let max_area = ctx.max_area();
         let mut sub = ctx.open_sub(max_area, id.append_str("list"), List::left_to_right());
         {
