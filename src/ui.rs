@@ -48,6 +48,11 @@ impl Element for BlueBox {
         let (hover_in, hover_out) = ctx.message(id.append_str("hovered"));
         let fill_id = id.append_str("fill");
 
+        let inner_color = match ctx.read_message(hover_in) {
+            Some(_) => color::constants::RED,
+            None => color::constants::WHITE,
+        };
+
         let mut sub = Size::build(id.append_str("size"))
         .width(50_f32)
         .height(50_f32)
@@ -62,7 +67,7 @@ impl Element for BlueBox {
                 .begin(&mut sub);
                 {
                         Fill::build(fill_id)
-                        .color(color::constants::WHITE)
+                        .color(inner_color)
                         .begin(&mut sub);
                         sub.end(); // fill
                 }
