@@ -61,7 +61,7 @@ pub fn main() {
         // Render the UI
         canvas.set_draw_color(Color::RGB(0, 0, 0));
         canvas.clear();
-        render_ui(&mut ctx, &mut canvas, &ui_commands, mouse_state);
+        render_ui(&mut ctx, &mut canvas, std::mem::replace(&mut ui_commands, CommandList::default()), mouse_state);
         canvas.present();
     }
 }
@@ -69,11 +69,11 @@ pub fn main() {
 fn render_ui(
     window: &mut Window,
     canvas: &mut WindowCanvas,
-    commands: &CommandList,
+    commands: CommandList,
     mouse: MouseState,
 ) {
     // Render all of the colored quads
-    for quad in &commands.colored_quads {
+    for quad in commands.colored_quads {
         canvas.set_draw_color(Color::RGBA(
             quad.color.red(),
             quad.color.green(),
@@ -92,21 +92,19 @@ fn render_ui(
     // Handle all of the hover quads
     let mouse_x = mouse.x() as f32;
     let mouse_y = mouse.y() as f32;
-    for quad in &commands.hover_quads {
+    for quad in commands.hover_quads {
         // Make sure x is within range
         if quad.quad.x > mouse_x || quad.quad.x + quad.quad.width < mouse_x {
-            window.write_state(quad.state, false);
             continue;
         }
 
         // Make sure y is within range
         if quad.quad.y > mouse_y || quad.quad.y + quad.quad.height < mouse_y {
-            window.write_state(quad.state, false);
             continue;
         }
 
-        // Write the state
-        window.write_state(quad.state, true);
+        // Write the message
+        window.write_message(quad.message, ());
     }
 }
 
@@ -137,8 +135,8 @@ fn build_ui(
 
     let render_start = Instant::now();
 
-    let elem_obj = ctx.run(window_region.area, Repeating, FilterStackBuilder::default());
-    elem_obj.layout.render(window_region, commands);
+    let elem_obj = ctx.run(window_region.area, Repeating, FilterStack::default());
+    elem_obj.render(window_region, commands);
 
     println!(
         "Generated rendering commands in {} μs",
