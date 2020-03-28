@@ -61,7 +61,7 @@ pub fn main() {
         // Render the UI
         canvas.set_draw_color(Color::RGB(0, 0, 0));
         canvas.clear();
-        render_ui(&mut ctx, &mut canvas, std::mem::replace(&mut ui_commands, CommandList::default()), mouse_state);
+        render_ui(&mut ctx, &mut canvas, &mut ui_commands, mouse_state);
         canvas.present();
     }
 }
@@ -69,11 +69,11 @@ pub fn main() {
 fn render_ui(
     window: &mut Window,
     canvas: &mut WindowCanvas,
-    commands: CommandList,
+    commands: &mut CommandList,
     mouse: MouseState,
 ) {
     // Render all of the colored quads
-    for quad in commands.colored_quads {
+    for quad in commands.colored_quads.drain(..) {
         canvas.set_draw_color(Color::RGBA(
             quad.color.red(),
             quad.color.green(),
@@ -92,7 +92,7 @@ fn render_ui(
     // Handle all of the hover quads
     let mouse_x = mouse.x() as f32;
     let mouse_y = mouse.y() as f32;
-    for quad in commands.hover_quads {
+    for quad in commands.hover_quads.drain(..) {
         // Make sure x is within range
         if quad.quad.x > mouse_x || quad.quad.x + quad.quad.width < mouse_x {
             continue;
