@@ -40,7 +40,6 @@ pub struct RedShift {
 //     }
 // }
 
-#[derive(Copy, Clone)]
 pub struct BlueBox;
 impl Element for BlueBox {
     fn run<'ctx, 'frm>(self, mut ctx: Context<'ctx, 'frm>, id: Id) -> LayoutNode<'frm> {
@@ -84,12 +83,10 @@ impl Element for BlueBox {
     }
 }
 
-#[derive(Copy, Clone)]
 pub struct Repeating;
 impl Element for Repeating {
     fn run<'ctx, 'frm>(self, mut ctx: Context<'ctx, 'frm>, id: Id) -> LayoutNode<'frm> {
-        let max_area = ctx.max_area();
-        let mut sub = ctx.open_sub(max_area, (id.append_str("list"), List::left_to_right()));
+        let mut sub = ctx.open_sub(ctx.max_area(), (id.append_str("list"), List::left_to_right()));
         {
             for i in 0..10 {
                 Border::build(id.append_str("padding").append_num(i))
@@ -101,6 +98,33 @@ impl Element for Repeating {
                 }
                 sub.end(); // padding
             }
+        }
+        sub.close()
+    }
+}
+
+pub struct GridRepeating;
+impl Element for GridRepeating {
+    fn run<'ctx, 'frm>(self, mut ctx: Context<'ctx, 'frm>, id: Id) -> LayoutNode<'frm> {
+        let grid = Grid {
+            rows: vec![GridTrack::Fr(2), GridTrack::Fr(1), GridTrack::Auto, GridTrack::Fr(1), GridTrack::Fr(2)],
+            cols: vec![GridTrack::Fr(1), GridTrack::Auto, GridTrack::Fr(1), GridTrack::Auto, GridTrack::Fr(1), GridTrack::Auto, GridTrack::Fr(1)],
+            regions: vec![
+                GridRegion::col_span(SocketName::from("top"), ColIndex::from_left(0), ColIndex::from_right(0), RowIndex::from_top(0)),
+                GridRegion::cell(SocketName::from("first"), ColIndex::from_left(1), RowIndex::from_top(2)),
+                GridRegion::cell(SocketName::from("second"), ColIndex::from_left(3), RowIndex::from_top(2)),
+                GridRegion::cell(SocketName::from("third"), ColIndex::from_left(5), RowIndex::from_top(2)),
+                GridRegion::col_span(SocketName::from("bot"), ColIndex::from_left(0), ColIndex::from_right(0), RowIndex::from_bot(0)),
+            ],
+        };
+
+        let mut sub = ctx.open_sub(ctx.max_area(), (id.append_str("grid"), grid));
+        {
+            sub.begin(SocketName::from("top"), (id.append_str("top"), Fill::new(color::constants::RED))).end();
+            sub.begin(SocketName::from("first"), (id.append_str("first"), BlueBox)).end();
+            sub.begin(SocketName::from("second"), (id.append_str("second"), BlueBox)).end();
+            sub.begin(SocketName::from("third"), (id.append_str("third"), BlueBox)).end();
+            sub.begin(SocketName::from("bot"), (id.append_str("bot"), Fill::new(color::constants::BLUE))).end();
         }
         sub.close()
     }
