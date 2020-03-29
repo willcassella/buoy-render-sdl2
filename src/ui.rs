@@ -45,16 +45,25 @@ impl Element for BlueBox {
     fn run<'ctx, 'frm>(self, mut ctx: Context<'ctx, 'frm>, id: Id) -> LayoutNode<'frm> {
         let max_area = ctx.max_area();
         let (hover_in, hover_out) = ctx.message(id.append_str("hovered"));
+        let (hover_time_in, hover_time_out) = ctx.message(id.append_str("hover_time"));
         let fill_id = id.append_str("fill");
 
+        let hover_time = ctx.read_message(hover_time_in).unwrap_or(0_f32);
+
         let inner_color = match ctx.read_message(hover_in) {
-            Some(_) => color::constants::RED,
-            None => color::constants::WHITE,
+            Some(_) => {
+                ctx.write_message(hover_time_out, hover_time + 0.5_f32);
+                color::constants::RED
+            }
+            None => {
+                ctx.write_message(hover_time_out, (hover_time - 0.5_f32).max(0_f32));
+                color::constants::WHITE
+            }
         };
 
         let mut sub = Size::build(id.append_str("size"))
-        .width(50_f32)
-        .height(50_f32)
+        .width(50_f32 + hover_time)
+        .height(50_f32 + hover_time)
         .open(&mut ctx, max_area);
         {
             Overlap::build(id.append_str("overlap"))
