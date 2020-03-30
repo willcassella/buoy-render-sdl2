@@ -4,7 +4,8 @@ use buoy::prelude::*;
 use buoy::render::CommandList;
 
 mod ui;
-use ui::{GridRepeating};
+#[allow(unused_imports)]
+use ui::{GridRepeating, Repeating};
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;

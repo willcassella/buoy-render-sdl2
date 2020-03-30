@@ -133,6 +133,20 @@ impl Element for GridRepeating {
                 GridTrack::Fr(1),
                 GridTrack::Auto,
                 GridTrack::Fr(1),
+                GridTrack::Auto,
+                GridTrack::Fr(1),
+                GridTrack::Auto,
+                GridTrack::Fr(1),
+                GridTrack::Auto,
+                GridTrack::Fr(1),
+                GridTrack::Auto,
+                GridTrack::Fr(1),
+                GridTrack::Auto,
+                GridTrack::Fr(1),
+                GridTrack::Auto,
+                GridTrack::Fr(1),
+                GridTrack::Auto,
+                GridTrack::Fr(1),
             ],
             regions: vec![
                 GridRegion::col_span(
@@ -142,18 +156,53 @@ impl Element for GridRepeating {
                     RowIndex::from_top(0),
                 ),
                 GridRegion::cell(
-                    SocketName::from("first"),
+                    SocketName::from("one"),
                     ColIndex::from_left(1),
                     RowIndex::from_top(2),
                 ),
                 GridRegion::cell(
-                    SocketName::from("second"),
+                    SocketName::from("two"),
                     ColIndex::from_left(3),
                     RowIndex::from_top(2),
                 ),
                 GridRegion::cell(
-                    SocketName::from("third"),
+                    SocketName::from("three"),
                     ColIndex::from_left(5),
+                    RowIndex::from_top(2),
+                ),
+                GridRegion::cell(
+                    SocketName::from("four"),
+                    ColIndex::from_left(7),
+                    RowIndex::from_top(2),
+                ),
+                GridRegion::cell(
+                    SocketName::from("five"),
+                    ColIndex::from_left(9),
+                    RowIndex::from_top(2),
+                ),
+                GridRegion::cell(
+                    SocketName::from("six"),
+                    ColIndex::from_left(11),
+                    RowIndex::from_top(2),
+                ),
+                GridRegion::cell(
+                    SocketName::from("seven"),
+                    ColIndex::from_left(13),
+                    RowIndex::from_top(2),
+                ),
+                GridRegion::cell(
+                    SocketName::from("eight"),
+                    ColIndex::from_left(15),
+                    RowIndex::from_top(2),
+                ),
+                GridRegion::cell(
+                    SocketName::from("nine"),
+                    ColIndex::from_left(17),
+                    RowIndex::from_top(2),
+                ),
+                GridRegion::cell(
+                    SocketName::from("ten"),
+                    ColIndex::from_left(19),
                     RowIndex::from_top(2),
                 ),
                 GridRegion::col_span(
@@ -172,14 +221,25 @@ impl Element for GridRepeating {
                 (id.append_str("top"), Fill::new(color::constants::RED)),
             )
             .end();
-            sub.begin(SocketName::from("first"), (id.append_str("first"), BlueBox))
+            sub.begin(SocketName::from("one"), (id.append_str("one"), BlueBox))
                 .end();
-            sub.begin(
-                SocketName::from("second"),
-                (id.append_str("second"), BlueBox),
-            )
-            .end();
-            sub.begin(SocketName::from("third"), (id.append_str("third"), BlueBox))
+            sub.begin(SocketName::from("two"), (id.append_str("two"), BlueBox))
+                .end();
+            sub.begin(SocketName::from("three"), (id.append_str("three"), BlueBox))
+                .end();
+            sub.begin(SocketName::from("four"), (id.append_str("four"), BlueBox))
+                .end();
+            sub.begin(SocketName::from("five"), (id.append_str("five"), BlueBox))
+                .end();
+            sub.begin(SocketName::from("six"), (id.append_str("six"), BlueBox))
+                .end();
+            sub.begin(SocketName::from("seven"), (id.append_str("seven"), BlueBox))
+                .end();
+            sub.begin(SocketName::from("eight"), (id.append_str("eight"), BlueBox))
+                .end();
+            sub.begin(SocketName::from("nine"), (id.append_str("nine"), BlueBox))
+                .end();
+            sub.begin(SocketName::from("ten"), (id.append_str("ten"), BlueBox))
                 .end();
             sub.begin(
                 SocketName::from("bot"),
